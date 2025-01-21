@@ -1,0 +1,1 @@
+﻿dotnet pack .\AppLinks.MAUI\AppLinks.MAUI.csproj /p:Version=1.0.0-pre
