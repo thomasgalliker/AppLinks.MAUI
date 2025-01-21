@@ -25,7 +25,7 @@
   <!--NuGet package-->
   <PropertyGroup>
     <Product>AppLinks.MAUI</Product>
-    <Description>App links handling for .NET MAUI apps</Description>
+    <Description>Android App Links and Apple Universal Links for .NET MAUI apps</Description>
     <Version>1.0.0</Version>
     <Authors>Thomas Galliker</Authors>
     <PackageId>AppLinks.MAUI</PackageId>

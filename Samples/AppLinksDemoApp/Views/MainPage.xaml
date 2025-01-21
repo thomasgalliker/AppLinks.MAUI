@@ -51,61 +51,24 @@
 
             <Label
                 Style="{StaticResource Heading2LabelStyle}"
-                Text="ICameraPermissions" />
+                Text="IAppLinkHandler" />
 
             <Button
-                Command="{Binding CheckCameraPermissionsCommand}"
-                Text="Check camera permission"
-                HorizontalOptions="Fill" />
-            <Button
-                Command="{Binding RequestCameraPermissionsCommand}"
-                Text="Request camera permission"
-                HorizontalOptions="Fill" />
-            <Button
-                Command="{Binding CheckAndRequestCameraPermissionsCommand}"
-                Text="Check &amp; request camera permission"
+                Command="{Binding SubscribeToAppLinkReceivedEventCommand}"
+                Text="Subscribe AppLinkReceived event"
                 HorizontalOptions="Fill" />
             <Label>
                 <Label.FormattedText>
                     <FormattedString>
-                        <Span Text="AuthorizationStatus: " />
+                        <Span Text="AppLinkUrl: " />
                         <Span
                             FontAttributes="Bold"
-                            Text="{Binding AuthorizationStatus}" />
+                            Text="{Binding AppLinkUrl}" />
                     </FormattedString>
                 </Label.FormattedText>
             </Label>
 
             <controls:DividerLine />
-
-            <Label
-                Style="{StaticResource Heading2LabelStyle}"
-                Text="Test Pages" />
-            <Button
-                Command="{Binding NavigateToPageCommand}"
-                CommandParameter="DefaultCameraViewPage"
-                Text="Default CameraView"
-                HorizontalOptions="Fill" />
-            <Button
-                Command="{Binding NavigateToPageCommand}"
-                CommandParameter="QRCodeScannerPage"
-                Text="QR Code Scanner"
-                HorizontalOptions="Fill" />
-            <Button
-                Command="{Binding NavigateToPageCommand}"
-                CommandParameter="UniversalScannerPage"
-                Text="Universal Barcode Scanner"
-                HorizontalOptions="Fill" />
-            <Button
-                Command="{Binding NavigateToModalPageCommand}"
-                CommandParameter="CameraPreviewPage"
-                Text="CameraPreview Demo"
-                HorizontalOptions="Fill" />
-            <Button
-                Command="{Binding NavigateToPageCommand}"
-                CommandParameter="FilePickerPage"
-                Text="File Picker Demo"
-                HorizontalOptions="Fill" />
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

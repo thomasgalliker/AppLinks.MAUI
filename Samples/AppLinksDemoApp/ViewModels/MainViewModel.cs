@@ -1,6 +1,7 @@
 ﻿using System.Windows.Input;
 using AppLinksDemoApp.Services.Navigation;
 using AppLinks.MAUI;
+using AppLinks.MAUI.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -12,15 +13,13 @@ namespace AppLinksDemoApp.ViewModels
         private readonly ILogger logger;
         private readonly INavigationService navigationService;
         private readonly IDialogService dialogService;
-        private readonly ICameraPermissions cameraPermissions;
+        private readonly IAppLinkHandler appLinkHandler;
         private readonly ILauncher launcher;
 
         private IAsyncRelayCommand appearingCommand;
         private bool isInitialized;
-        private bool authorizationStatus;
-        private IAsyncRelayCommand checkCameraPermissionsCommand;
-        private IAsyncRelayCommand requestCameraPermissionsCommand;
-        private IAsyncRelayCommand checkAndRequestCameraPermissionsCommand;
+        private string appLinkUrl;
+        private IAsyncRelayCommand subscribeToAppLinkReceivedEventCommand;
         private IAsyncRelayCommand<string> navigateToPageCommand;
         private IAsyncRelayCommand<string> navigateToModalPageCommand;
         private IAsyncRelayCommand<string> openUrlCommand;
@@ -29,16 +28,15 @@ namespace AppLinksDemoApp.ViewModels
             ILogger<MainViewModel> logger,
             INavigationService navigationService,
             IDialogService dialogService,
-            ICameraPermissions cameraPermissions,
+            IAppLinkHandler appLinkHandler,
             ILauncher launcher)
         {
             this.logger = logger;
             this.navigationService = navigationService;
             this.dialogService = dialogService;
-            this.cameraPermissions = cameraPermissions;
+            this.appLinkHandler = appLinkHandler;
             this.launcher = launcher;
         }
-
 
         public IAsyncRelayCommand AppearingCommand
         {
@@ -58,7 +56,7 @@ namespace AppLinksDemoApp.ViewModels
         {
             try
             {
-                await this.CheckCameraPermissionsAsync();
+                await this.SubscribeToAppLinkReceivedEventAsync();
             }
             catch (Exception ex)
             {
@@ -67,65 +65,33 @@ namespace AppLinksDemoApp.ViewModels
             }
         }
 
-        public bool AuthorizationStatus
+        public ICommand SubscribeToAppLinkReceivedEventCommand
         {
-            get => this.authorizationStatus;
-            private set => this.SetProperty(ref this.authorizationStatus, value);
+            get => this.subscribeToAppLinkReceivedEventCommand ??= new AsyncRelayCommand(this.SubscribeToAppLinkReceivedEventAsync);
         }
 
-        public ICommand CheckCameraPermissionsCommand
-        {
-            get => this.checkCameraPermissionsCommand ??= new AsyncRelayCommand(this.CheckCameraPermissionsAsync);
-        }
-
-        private async Task CheckCameraPermissionsAsync()
+        private async Task SubscribeToAppLinkReceivedEventAsync()
         {
             try
             {
-                this.AuthorizationStatus = await this.cameraPermissions.CheckPermissionAsync();
+                this.appLinkHandler.AppLinkReceived += this.OnAppLinkReceived;
             }
             catch (Exception ex)
             {
-                this.logger.LogError(ex, "CheckCameraPermissionsAsync failed with exception");
-                await this.dialogService.DisplayAlertAsync("Error", $"Check for camera permissions failed: {ex.Message}", "OK");
+                this.logger.LogError(ex, "SubscribeToAppLinkReceivedEventAsync failed with exception");
+                await this.dialogService.DisplayAlertAsync("Error", $"Failed to subscribe to AppLinkReceived event: {ex.Message}", "OK");
             }
         }
 
-        public ICommand RequestCameraPermissionsCommand
+        private void OnAppLinkReceived(object sender, AppLinkReceivedEventArgs e)
         {
-            get => this.requestCameraPermissionsCommand ??= new AsyncRelayCommand(this.RequestCameraPermissionsAsync);
+            this.AppLinkUrl = e.Uri.ToString();
         }
 
-        private async Task RequestCameraPermissionsAsync()
+        public string AppLinkUrl
         {
-            try
-            {
-                this.AuthorizationStatus = await this.cameraPermissions.RequestPermissionAsync();
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError(ex, "RequestCameraPermissionsAsync failed with exception");
-                await this.dialogService.DisplayAlertAsync("Error", $"Request for camera permissions failed: {ex.Message}", "OK");
-            }
-        }
-
-
-        public ICommand CheckAndRequestCameraPermissionsCommand
-        {
-            get => this.checkAndRequestCameraPermissionsCommand ??= new AsyncRelayCommand(this.CheckAndRequestCameraPermissionsAsync);
-        }
-
-        private async Task CheckAndRequestCameraPermissionsAsync()
-        {
-            try
-            {
-                this.AuthorizationStatus = await this.cameraPermissions.CheckAndRequestPermissionAsync();
-            }
-            catch (Exception ex)
-            {
-                this.logger.LogError(ex, "CheckAndRequestCameraPermissionsAsync failed with exception");
-                await this.dialogService.DisplayAlertAsync("Error", $"CheckAndRequest for camera permissions failed: {ex.Message}", "OK");
-            }
+            get => this.appLinkUrl;
+            private set => this.SetProperty(ref this.appLinkUrl, value);
         }
 
         public IAsyncRelayCommand<string> NavigateToPageCommand

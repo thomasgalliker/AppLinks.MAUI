@@ -40,8 +40,6 @@ namespace AppLinksDemoApp
             builder.Services.AddSingleton<INavigationService, MauiNavigationService>();
             builder.Services.AddSingleton<IDialogService, DialogService>();
             builder.Services.AddSingleton<ILauncher>(_ => Launcher.Default);
-            builder.Services.AddSingleton<IMediaPicker>(_ => MediaPicker.Default);
-            builder.Services.AddSingleton<IClipboard>(_ => Clipboard.Default);
 
             // Register pages and view models
             builder.Services.AddTransient<MainPage>();
