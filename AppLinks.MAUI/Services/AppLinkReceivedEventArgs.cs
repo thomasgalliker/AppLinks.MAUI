@@ -4,6 +4,8 @@ namespace AppLinks.MAUI.Services
     {
         public AppLinkReceivedEventArgs(Uri uri)
         {
+            ArgumentNullException.ThrowIfNull(uri);
+
             this.Uri = uri;
         }
 

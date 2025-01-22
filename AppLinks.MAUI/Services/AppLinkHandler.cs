@@ -22,9 +22,9 @@ namespace AppLinks.MAUI.Services
         private readonly IMainThread mainThread;
 
         private EventHandler<AppLinkReceivedEventArgs> appLinkReceivedEventHandler;
-        private AppLinkReceivedEventArgs queuedAppLinkEvent;
+        private AppLinkReceivedEventArgs cachedAppLinkReceivedEventArgs;
 
-        private AppLinkHandler(
+        internal AppLinkHandler(
             ILogger<AppLinkHandler> logger,
             IMainThread mainThread)
         {
@@ -34,7 +34,7 @@ namespace AppLinks.MAUI.Services
 
         public void EnqueueAppLink(Uri uri)
         {
-            this.logger.LogDebug($"EnqueueAppLink: externalUri={uri}");
+            this.logger.LogDebug($"EnqueueAppLink: uri={uri}");
             this.RaiseAppLinkReceivedEvent(uri);
         }
 
@@ -45,17 +45,17 @@ namespace AppLinks.MAUI.Services
                 var previousSubscriptions = this.appLinkReceivedEventHandler;
                 this.appLinkReceivedEventHandler += value;
 
-                if (this.queuedAppLinkEvent is AppLinkReceivedEventArgs appLinkEvent &&
+                if (this.cachedAppLinkReceivedEventArgs is AppLinkReceivedEventArgs eventArgs &&
                     previousSubscriptions == null)
                 {
+                    this.logger.LogDebug($"AppLinkReceived: Cached event raised to new subscribed (uri={eventArgs.Uri})");
+
                     this.mainThread.BeginInvokeOnMainThread(() =>
                     {
-                        this.logger.LogDebug(
-                            $"AppLinkReceived: Event subscribed and raised for " +
-                            $"Uri={appLinkEvent.Uri}");
-                        this.appLinkReceivedEventHandler.Invoke(this, appLinkEvent);
-                        this.queuedAppLinkEvent = null;
+                        this.appLinkReceivedEventHandler.Invoke(this, eventArgs);
                     });
+
+                    this.cachedAppLinkReceivedEventArgs = null;
                 }
             }
             remove
@@ -66,17 +66,19 @@ namespace AppLinks.MAUI.Services
 
         private void RaiseAppLinkReceivedEvent(Uri uri)
         {
+            var appLinkReceivedEventArgs = new AppLinkReceivedEventArgs(uri);
+
             if (this.appLinkReceivedEventHandler == null)
             {
-                this.logger.LogDebug($"RaiseAppLinkReceivedEvent: uri={uri} (_appLinkReceivedEventHandler not present)");
-                this.queuedAppLinkEvent = new AppLinkReceivedEventArgs(uri);
+                this.logger.LogDebug($"RaiseAppLinkReceivedEvent: uri={uri} ({nameof(this.appLinkReceivedEventHandler)} not set)");
+                this.cachedAppLinkReceivedEventArgs = appLinkReceivedEventArgs;
             }
             else
             {
+                this.logger.LogDebug($"RaiseAppLinkReceivedEvent: uri={uri}");
                 this.mainThread.BeginInvokeOnMainThread(() =>
                 {
-                    this.logger.LogDebug($"RaiseAppLinkReceivedEvent: uri={uri} (_appLinkReceivedEventHandler present)");
-                    this.appLinkReceivedEventHandler.Invoke(this, new AppLinkReceivedEventArgs(uri));
+                    this.appLinkReceivedEventHandler.Invoke(this, appLinkReceivedEventArgs);
                 });
             }
         }
