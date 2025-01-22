@@ -14,8 +14,11 @@ namespace AppLinks.MAUI
 {
     public static class MauiAppBuilderExtensions
     {
-        public static MauiAppBuilder UseAppLinks(this MauiAppBuilder builder)
+        public static MauiAppBuilder UseAppLinks(this MauiAppBuilder builder, Action<AppLinkOptions> options = null)
         {
+            var defaultOptions = new AppLinkOptions();
+            options?.Invoke(defaultOptions);
+
 #if (ANDROID || IOS)
 
             builder.ConfigureLifecycleEvents(lifecycle =>
@@ -33,7 +36,7 @@ namespace AppLinks.MAUI
 
                         if (action == Intent.ActionView && data is not null)
                         {
-                            Task.Run(() => HandleAppLink(data));
+                            Task.Run(() => HandleAppLink(data, defaultOptions));
                         }
                     });
 
@@ -48,7 +51,7 @@ namespace AppLinks.MAUI
 
                         if (action == Intent.ActionMain && data is not null)
                         {
-                            Task.Run(() => HandleAppLink(data));
+                            Task.Run(() => HandleAppLink(data, defaultOptions));
                         }
                     });
                 });
@@ -58,25 +61,29 @@ namespace AppLinks.MAUI
                     // Universal link delivered to FinishedLaunching after app launch.
                     ios.FinishedLaunching((app, _) =>
                     {
-                        HandleAppLink(app.UserActivity);
+                        HandleAppLink(app.UserActivity, defaultOptions);
                         return true;
                     });
 
-                    ios.OpenUrl((_, url, _) => HandleAppLink(url));
+                    ios.OpenUrl((_, url, _) => HandleAppLink(url, defaultOptions));
 
                     // Universal link delivered to ContinueUserActivity when the app is running or suspended.
-                    ios.ContinueUserActivity((_, userActivity, _) => HandleAppLink(userActivity));
+                    ios.ContinueUserActivity((_, userActivity, _) => HandleAppLink(userActivity, defaultOptions));
 
                     // Only required if using Scenes for multi-window support.
                     if (OperatingSystem.IsIOSVersionAtLeast(13) || OperatingSystem.IsMacCatalystVersionAtLeast(13))
                     {
                         // Universal link delivered to SceneWillConnect after app launch
                         ios.SceneWillConnect((_, _, sceneConnectionOptions)
-                            => HandleAppLink(sceneConnectionOptions.UserActivities.ToArray()
-                                .FirstOrDefault(a => a.ActivityType == NSUserActivityType.BrowsingWeb)));
+                            =>
+                        {
+                            var userActivity = sceneConnectionOptions.UserActivities.ToArray()
+                                .FirstOrDefault(a => a.ActivityType == NSUserActivityType.BrowsingWeb);
+                            HandleAppLink(userActivity, defaultOptions);
+                        });
 
                         // Universal link delivered to SceneContinueUserActivity when the app is running or suspended
-                        ios.SceneContinueUserActivity((_, userActivity) => HandleAppLink(userActivity));
+                        ios.SceneContinueUserActivity((_, userActivity) => HandleAppLink(userActivity, defaultOptions));
                     }
                 });
 #endif
@@ -90,24 +97,24 @@ namespace AppLinks.MAUI
         }
 
 #if IOS
-        private static bool HandleAppLink(NSUserActivity userActivity)
+        private static bool HandleAppLink(NSUserActivity userActivity, AppLinkOptions options)
         {
             if (userActivity != null &&
                 userActivity.ActivityType == NSUserActivityType.BrowsingWeb &&
                 userActivity.WebPageUrl is NSUrl webPageUrl)
             {
-                HandleAppLink(webPageUrl);
+                HandleAppLink(webPageUrl, options);
                 return true;
             }
 
             return false;
         }
 
-        private static bool HandleAppLink(NSUrl url)
+        private static bool HandleAppLink(NSUrl url, AppLinkOptions options)
         {
             try
             {
-                HandleAppLink((Uri)url);
+                HandleAppLink((Uri)url, options);
                 return true;
             }
             catch
@@ -118,17 +125,21 @@ namespace AppLinks.MAUI
 
 #endif
 
-        private static void HandleAppLink(string url)
+        private static void HandleAppLink(string url, AppLinkOptions options)
         {
             if (Uri.TryCreate(url, UriKind.RelativeOrAbsolute, out var uri))
             {
-                HandleAppLink(uri);
+                HandleAppLink(uri, options);
             }
         }
 
-        private static void HandleAppLink(Uri uri)
+        private static void HandleAppLink(Uri uri, AppLinkOptions options)
         {
-            Application.Current?.SendOnAppLinkRequestReceived(uri);
+            if (options.EnableSendOnAppLinkRequestReceived)
+            {
+                Application.Current?.SendOnAppLinkRequestReceived(uri);
+            }
+
             AppLinkHandler.Current.EnqueueAppLink(uri);
         }
     }
