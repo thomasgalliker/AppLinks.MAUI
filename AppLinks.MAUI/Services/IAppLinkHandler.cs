@@ -9,6 +9,14 @@ namespace AppLinks.MAUI.Services
 
         internal void EnqueueAppLink(Uri uri);
 
+        /// <summary>
+        /// Raises app link data to subscribers.
+        /// </summary>
         event EventHandler<AppLinkReceivedEventArgs> AppLinkReceived;
+
+        /// <summary>
+        /// Clear any cached app link data.
+        /// </summary>
+        void ResetCache();
     }
 }

@@ -71,5 +71,24 @@ namespace AppLinks.MAUI.Tests
             // Assert
             appLinkEventArgs.Should().HaveCount(1);
         }
+
+        [Fact]
+        public void ShouldResetCacheAfterEnqueue()
+        {
+            // Arrange
+            var appLinkEventArgs = new ConcurrentBag<AppLinkReceivedEventArgs>();
+
+            var appLinkHandler = this.autoMocker.CreateInstance<AppLinkHandler>(enablePrivate: true);
+
+            var uri = new Uri("https://example.com");
+            appLinkHandler.EnqueueAppLink(uri);
+            appLinkHandler.ResetCache();
+
+            // Act
+            appLinkHandler.AppLinkReceived += (sender, args) => { appLinkEventArgs.Add(args); };
+
+            // Assert
+            appLinkEventArgs.Should().HaveCount(0);
+        }
     }
 }

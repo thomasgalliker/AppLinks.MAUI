@@ -55,7 +55,7 @@ namespace AppLinks.MAUI.Services
                         this.appLinkReceivedEventHandler.Invoke(this, eventArgs);
                     });
 
-                    this.cachedAppLinkReceivedEventArgs = null;
+                    this.ResetCache();
                 }
             }
             remove
@@ -81,6 +81,12 @@ namespace AppLinks.MAUI.Services
                     this.appLinkReceivedEventHandler.Invoke(this, appLinkReceivedEventArgs);
                 });
             }
+        }
+
+        public void ResetCache()
+        {
+            this.logger.LogDebug("ResetCache");
+            this.cachedAppLinkReceivedEventArgs = null;
         }
     }
 }
