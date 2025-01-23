@@ -41,11 +41,10 @@ You can use this library in any .NET MAUI project compatible to .NET 8 and highe
 ### API Usage
 Inject `IAppLinkHandler` or use the static singleton instance `IAppLinkHandler.Current` in your code to get access to the main features of this library.
 - `IAppLinkHandler.AppLinkReceived`: This event is fired as soon as an app link URL is received.
-
-  > [!NOTE]
-  > If an app link is received before the `AppLinkReceived` event is subscribed, the received app link URL is cached for deferred delivery.
-
 - `IAppLinkHandler.ResetCache()`: Clear any cached app link data. This clears the internal queue which is used to temporarily cache received app links.
+
+> [!NOTE]
+> If an app link is received before the `AppLinkReceived` event is subscribed, the received app link URL is cached for deferred delivery.
 
 > [!WARNING]
 > App links offer a potential attack vector into your app, so ensure you validate all URI parameters and discard any malformed URIs.
