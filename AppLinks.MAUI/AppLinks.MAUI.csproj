@@ -39,7 +39,10 @@
     <Company>superdev GmbH</Company>
     <Copyright>Copyright $([System.DateTime]::Now.ToString(`yyyy`)) © Thomas Galliker</Copyright>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <PackageReleaseNotes>1.0
+    <PackageReleaseNotes>1.1
+- Use queue to cache received app link URLs.
+
+1.0
 - Initial release.
     </PackageReleaseNotes>
   </PropertyGroup>
@@ -79,8 +82,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Platforms\Android\Services\" />
-    <Folder Include="Platforms\iOS\Services\" />
+    <Folder Include="Platforms\Android\" />
+    <Folder Include="Platforms\iOS\" />
   </ItemGroup>
 
 </Project>
