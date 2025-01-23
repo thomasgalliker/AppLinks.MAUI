@@ -57,16 +57,48 @@
                 Command="{Binding SubscribeToAppLinkReceivedEventCommand}"
                 Text="Subscribe AppLinkReceived event"
                 HorizontalOptions="Fill" />
+            <Button
+                Command="{Binding UnsubscribeFromAppLinkReceivedEventCommand}"
+                Text="Unsubscribe from AppLinkReceived event"
+                HorizontalOptions="Fill" />
             <Label>
                 <Label.FormattedText>
                     <FormattedString>
                         <Span Text="AppLinkUrl: " />
                         <Span
                             FontAttributes="Bold"
-                            Text="{Binding AppLinkUrl}" />
+                            Text="{Binding AppLinkUri}" />
                     </FormattedString>
                 </Label.FormattedText>
             </Label>
+
+            <controls:DividerLine />
+
+            <Label
+                Style="{StaticResource Heading2LabelStyle}"
+                Text="IUriProcessorRules" />
+
+            <Button
+                Command="{Binding AddHomeRuleCommand}"
+                Text="Add HomeRule"
+                HorizontalOptions="Fill" />
+            <Button
+                Command="{Binding ClearRulesCommand}"
+                Text="Clear rules"
+                HorizontalOptions="Fill" />
+
+            <controls:DividerLine />
+            <Label
+                Style="{StaticResource Heading2LabelStyle}"
+                Text="IUriProcessor" />
+
+            <Entry
+                Placeholder="https://"
+                Text="{Binding TestUri}" />
+            <Button
+                Command="{Binding ProcessUriCommand}"
+                Text="Process URI"
+                HorizontalOptions="Fill" />
 
             <controls:DividerLine />
         </VerticalStackLayout>

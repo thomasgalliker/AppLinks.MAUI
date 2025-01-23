@@ -14,27 +14,38 @@ namespace AppLinksDemoApp.ViewModels
         private readonly INavigationService navigationService;
         private readonly IDialogService dialogService;
         private readonly IAppLinkHandler appLinkHandler;
+        private readonly IUriProcessor uriProcessor;
+        private readonly IUriProcessorRules uriProcessorRules;
         private readonly ILauncher launcher;
 
         private IAsyncRelayCommand appearingCommand;
         private bool isInitialized;
-        private string appLinkUrl;
+        private string appLinkUri;
         private IAsyncRelayCommand subscribeToAppLinkReceivedEventCommand;
+        private IAsyncRelayCommand unsubscribeFromAppLinkReceivedEventCommand;
+        private IAsyncRelayCommand addHomeRuleCommand;
+        private IAsyncRelayCommand clearRulesCommand;
+        private IAsyncRelayCommand processUriCommand;
         private IAsyncRelayCommand<string> navigateToPageCommand;
         private IAsyncRelayCommand<string> navigateToModalPageCommand;
         private IAsyncRelayCommand<string> openUrlCommand;
+        private string testUri;
 
         public MainViewModel(
             ILogger<MainViewModel> logger,
             INavigationService navigationService,
             IDialogService dialogService,
             IAppLinkHandler appLinkHandler,
+            IUriProcessor uriProcessor,
+            IUriProcessorRules uriProcessorRules,
             ILauncher launcher)
         {
             this.logger = logger;
             this.navigationService = navigationService;
             this.dialogService = dialogService;
             this.appLinkHandler = appLinkHandler;
+            this.uriProcessor = uriProcessor;
+            this.uriProcessorRules = uriProcessorRules;
             this.launcher = launcher;
         }
 
@@ -56,7 +67,15 @@ namespace AppLinksDemoApp.ViewModels
         {
             try
             {
-                await this.SubscribeToAppLinkReceivedEventAsync();
+                this.TestUri = "https://example.com/home";
+
+                this.uriProcessor.RegisterCallback(
+                    UriRules.HomeRule,
+                    uri => this.dialogService.DisplayAlertAsync(
+                        UriRules.HomeRule.RuleId,
+                        $"Callback for rule \"{UriRules.HomeRule.RuleId}\"{Environment.NewLine}{Environment.NewLine}" +
+                        $"URI {uri}",
+                        "OK"));
             }
             catch (Exception ex)
             {
@@ -79,19 +98,98 @@ namespace AppLinksDemoApp.ViewModels
             catch (Exception ex)
             {
                 this.logger.LogError(ex, "SubscribeToAppLinkReceivedEventAsync failed with exception");
-                await this.dialogService.DisplayAlertAsync("Error", $"Failed to subscribe to AppLinkReceived event: {ex.Message}", "OK");
+                await this.dialogService.DisplayAlertAsync("Error", $"Subscribe failed with exception: {ex.Message}", "OK");
+            }
+        }
+
+        public ICommand UnsubscribeFromAppLinkReceivedEventCommand
+        {
+            get => this.unsubscribeFromAppLinkReceivedEventCommand ??= new AsyncRelayCommand(this.UnsubscribeFromAppLinkReceivedEventAsync);
+        }
+
+        private async Task UnsubscribeFromAppLinkReceivedEventAsync()
+        {
+            try
+            {
+                this.appLinkHandler.AppLinkReceived -= this.OnAppLinkReceived;
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError(ex, "UnsubscribeFromAppLinkReceivedEventAsync failed with exception");
+                await this.dialogService.DisplayAlertAsync("Error", $"Unsubscribe failed with exception: {ex.Message}", "OK");
             }
         }
 
         private void OnAppLinkReceived(object sender, AppLinkReceivedEventArgs e)
         {
-            this.AppLinkUrl = e.Uri.ToString();
+            this.AppLinkUri = e.Uri.ToString();
         }
 
-        public string AppLinkUrl
+        public string AppLinkUri
         {
-            get => this.appLinkUrl;
-            private set => this.SetProperty(ref this.appLinkUrl, value);
+            get => this.appLinkUri;
+            private set => this.SetProperty(ref this.appLinkUri, value);
+        }
+
+        public ICommand AddHomeRuleCommand
+        {
+            get => this.addHomeRuleCommand ??= new AsyncRelayCommand(this.AddHomeRuleAsync);
+        }
+
+        private async Task AddHomeRuleAsync()
+        {
+            try
+            {
+                this.uriProcessorRules.Add(UriRules.HomeRule);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError(ex, "AddHomeRuleAsync failed with exception");
+                await this.dialogService.DisplayAlertAsync("Error", $"AddHomeRuleAsync failed with exception: {ex.Message}", "OK");
+            }
+        }
+
+        public ICommand ClearRulesCommand
+        {
+            get => this.clearRulesCommand ??= new AsyncRelayCommand(this.ClearRulesAsync);
+        }
+
+        private async Task ClearRulesAsync()
+        {
+            try
+            {
+                this.uriProcessorRules.Clear();
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError(ex, "ClearRulesAsync failed with exception");
+                await this.dialogService.DisplayAlertAsync("Error", $"ClearRulesAsync failed with exception: {ex.Message}", "OK");
+            }
+        }
+
+        public string TestUri
+        {
+            get => this.testUri;
+            set => this.SetProperty(ref this.testUri, value);
+        }
+
+        public ICommand ProcessUriCommand
+        {
+            get => this.processUriCommand ??= new AsyncRelayCommand(this.ProcessUriAsync);
+        }
+
+        private async Task ProcessUriAsync()
+        {
+            try
+            {
+                var uri = new Uri(this.TestUri);
+                this.uriProcessor.Process(uri);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError(ex, "ProcessUriAsync failed with exception");
+                await this.dialogService.DisplayAlertAsync("Error", $"ProcessUriAsync failed with exception: {ex.Message}", "OK");
+            }
         }
 
         public IAsyncRelayCommand<string> NavigateToPageCommand

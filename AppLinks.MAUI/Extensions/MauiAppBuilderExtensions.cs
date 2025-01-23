@@ -88,10 +88,13 @@ namespace AppLinks.MAUI
                 });
 #endif
             });
-
-            builder.Services.TryAddSingleton<IMainThread>(_ => EssentialsMainThread.Current);
-            builder.Services.TryAddSingleton<IAppLinkHandler>(_ => AppLinkHandler.Current);
 #endif
+
+            builder.Services.AddSingleton<AppLinkOptions>(defaultOptions);
+            builder.Services.AddSingleton<IMainThread>(_ => EssentialsMainThread.Current);
+            builder.Services.AddSingleton<IAppLinkHandler>(_ => IAppLinkHandler.Current);
+            builder.Services.AddSingleton<IUriProcessorRules>(_ => IUriProcessorRules.Current);
+            builder.Services.AddSingleton<IUriProcessor>(_ => IUriProcessor.Current);
 
             return builder;
         }
