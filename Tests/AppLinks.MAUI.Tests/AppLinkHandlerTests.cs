@@ -40,10 +40,10 @@ namespace AppLinks.MAUI.Tests
         public void ShouldEnqueueAppLink_AppLinkReceivedSubscribedBeforeEnqueue()
         {
             // Arrange
-            var appLinkEventArgs = new ConcurrentBag<AppLinkReceivedEventArgs>();
+            var appLinkEventArgs = new List<AppLinkReceivedEventArgs>();
 
             var appLinkHandler = this.autoMocker.CreateInstance<AppLinkHandler>(enablePrivate: true);
-            appLinkHandler.AppLinkReceived += (sender, args) => { appLinkEventArgs.Add(args); };
+            appLinkHandler.AppLinkReceived += (_, args) => { appLinkEventArgs.Add(args); };
 
             var uri = new Uri("https://example.com");
 
@@ -58,25 +58,29 @@ namespace AppLinks.MAUI.Tests
         public void ShouldEnqueueAppLink_AppLinkReceivedSubscribedAfterEnqueue()
         {
             // Arrange
-            var appLinkEventArgs = new ConcurrentBag<AppLinkReceivedEventArgs>();
+            var appLinkEventArgs = new List<AppLinkReceivedEventArgs>();
 
             var appLinkHandler = this.autoMocker.CreateInstance<AppLinkHandler>(enablePrivate: true);
 
-            var uri = new Uri("https://example.com");
-            appLinkHandler.EnqueueAppLink(uri);
+            appLinkHandler.EnqueueAppLink(new Uri("https://uri1.com"));
+            appLinkHandler.EnqueueAppLink(new Uri("https://uri2.com"));
+            appLinkHandler.EnqueueAppLink(new Uri("https://uri3.com"));
 
             // Act
-            appLinkHandler.AppLinkReceived += (sender, args) => { appLinkEventArgs.Add(args); };
+            appLinkHandler.AppLinkReceived += (_, args) => { appLinkEventArgs.Add(args); };
 
             // Assert
-            appLinkEventArgs.Should().HaveCount(1);
+            appLinkEventArgs.Should().HaveCount(3);
+            appLinkEventArgs.ElementAt(0).Should().BeEquivalentTo(new AppLinkReceivedEventArgs(new Uri("https://uri1.com")));
+            appLinkEventArgs.ElementAt(1).Should().BeEquivalentTo(new AppLinkReceivedEventArgs(new Uri("https://uri2.com")));
+            appLinkEventArgs.ElementAt(2).Should().BeEquivalentTo(new AppLinkReceivedEventArgs(new Uri("https://uri3.com")));
         }
 
         [Fact]
         public void ShouldResetCacheAfterEnqueue()
         {
             // Arrange
-            var appLinkEventArgs = new ConcurrentBag<AppLinkReceivedEventArgs>();
+            var appLinkEventArgs = new List<AppLinkReceivedEventArgs>();
 
             var appLinkHandler = this.autoMocker.CreateInstance<AppLinkHandler>(enablePrivate: true);
 
@@ -85,7 +89,7 @@ namespace AppLinks.MAUI.Tests
             appLinkHandler.ResetCache();
 
             // Act
-            appLinkHandler.AppLinkReceived += (sender, args) => { appLinkEventArgs.Add(args); };
+            appLinkHandler.AppLinkReceived += (_, args) => { appLinkEventArgs.Add(args); };
 
             // Assert
             appLinkEventArgs.Should().HaveCount(0);

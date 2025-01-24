@@ -1,5 +1,8 @@
+using System.Diagnostics;
+
 namespace AppLinks.MAUI.Services
 {
+    [DebuggerDisplay("{Uri}")]
     public class AppLinkReceivedEventArgs : EventArgs
     {
         public AppLinkReceivedEventArgs(Uri uri)

@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+using AppLinks.MAUI.Extensions;
 using Microsoft.Extensions.Logging;
 
 namespace AppLinks.MAUI.Services
@@ -14,79 +16,137 @@ namespace AppLinks.MAUI.Services
         private static IAppLinkHandler CreateAppLinkHandler()
         {
             var logger = IPlatformApplication.Current.Services.GetRequiredService<ILogger<AppLinkHandler>>();
+            var appLinkOptions = IPlatformApplication.Current.Services.GetRequiredService<AppLinkOptions>();
             var mainThread = IPlatformApplication.Current.Services.GetRequiredService<IMainThread>();
-            return new AppLinkHandler(logger, mainThread);
+            var appLinkProcessor = IPlatformApplication.Current.Services.GetRequiredService<IAppLinkProcessor>();
+            return new AppLinkHandler(logger, appLinkOptions, mainThread, appLinkProcessor);
         }
 
         private readonly ILogger logger;
+        private readonly AppLinkOptions options;
         private readonly IMainThread mainThread;
+        private readonly IAppLinkProcessor appLinkProcessor;
+        private readonly Queue<AppLinkReceivedEventArgs> appLinkReceivedQueue = new Queue<AppLinkReceivedEventArgs>();
 
         private EventHandler<AppLinkReceivedEventArgs> appLinkReceivedEventHandler;
-        private AppLinkReceivedEventArgs cachedAppLinkReceivedEventArgs;
 
         internal AppLinkHandler(
             ILogger<AppLinkHandler> logger,
-            IMainThread mainThread)
+            AppLinkOptions options,
+            IMainThread mainThread,
+            IAppLinkProcessor appLinkProcessor)
         {
             this.logger = logger;
+            this.options = options;
             this.mainThread = mainThread;
+            this.appLinkProcessor = appLinkProcessor;
         }
 
         public void EnqueueAppLink(Uri uri)
         {
             this.logger.LogDebug($"EnqueueAppLink: uri={uri}");
-            this.RaiseAppLinkReceivedEvent(uri);
+
+            if (this.options.EnableAppLinkProcessor)
+            {
+                this.appLinkProcessor.Process(uri);
+            }
+
+            this.RaiseOrQueueEvent(
+                this.appLinkReceivedEventHandler,
+                () => new AppLinkReceivedEventArgs(uri),
+                this.appLinkReceivedQueue,
+                nameof(this.AppLinkReceived));
         }
 
         public event EventHandler<AppLinkReceivedEventArgs> AppLinkReceived
         {
             add
             {
-                var previousSubscriptions = this.appLinkReceivedEventHandler;
-                this.appLinkReceivedEventHandler += value;
-
-                if (this.cachedAppLinkReceivedEventArgs is AppLinkReceivedEventArgs eventArgs &&
-                    previousSubscriptions == null)
+                this.mainThread.BeginInvokeOnMainThread(() =>
                 {
-                    this.logger.LogDebug($"AppLinkReceived: Cached event raised to new subscribed (uri={eventArgs.Uri})");
-
-                    this.mainThread.BeginInvokeOnMainThread(() =>
-                    {
-                        this.appLinkReceivedEventHandler.Invoke(this, eventArgs);
-                    });
-
-                    this.ResetCache();
-                }
+                    this.DequeueAndSubscribe(
+                        value,
+                        ref this.appLinkReceivedEventHandler,
+                        this.appLinkReceivedQueue);
+                });
             }
-            remove
-            {
-                this.appLinkReceivedEventHandler -= value;
-            }
+            remove => this.appLinkReceivedEventHandler -= value;
         }
 
-        private void RaiseAppLinkReceivedEvent(Uri uri)
+        private void RaiseOrQueueEvent<TEventArgs>(
+            EventHandler<TEventArgs> eventHandler,
+            Func<TEventArgs> getEventArgs,
+            Queue<TEventArgs> queue,
+            string eventName,
+            [CallerMemberName] string callerName = null) where TEventArgs : EventArgs
         {
-            var appLinkReceivedEventArgs = new AppLinkReceivedEventArgs(uri);
-
-            if (this.appLinkReceivedEventHandler == null)
+            if (eventHandler != null && eventHandler.GetInvocationList().Length is var subscribersCount and > 0)
             {
-                this.logger.LogDebug($"RaiseAppLinkReceivedEvent: uri={uri} ({nameof(this.appLinkReceivedEventHandler)} not set)");
-                this.cachedAppLinkReceivedEventArgs = appLinkReceivedEventArgs;
+                // If subscribers are present, invoke the event handler
+                this.logger.LogDebug(
+                    $"{callerName ?? nameof(this.RaiseOrQueueEvent)} raises event \"{eventName}\" " +
+                    $"to {subscribersCount} subscriber{(subscribersCount != 1 ? "s" : "")}");
+
+                var args = getEventArgs();
+                eventHandler.Invoke(this, args);
             }
             else
             {
-                this.logger.LogDebug($"RaiseAppLinkReceivedEvent: uri={uri}");
-                this.mainThread.BeginInvokeOnMainThread(() =>
+                if (queue != null)
                 {
-                    this.appLinkReceivedEventHandler.Invoke(this, appLinkReceivedEventArgs);
-                });
+                    // If no subscribers are present, queue the event args
+                    this.logger.LogDebug(
+                        $"{callerName ?? nameof(this.RaiseOrQueueEvent)} queues event \"{eventName}\" " +
+                        $"into {queue.GetType().GetFormattedName()} for deferred delivery");
+
+                    var args = getEventArgs();
+                    queue.Enqueue(args);
+                }
+                else
+                {
+                    // If no subscribers are present and no queue is present, we just drop the event...
+                    this.logger.LogWarning(
+                        $"{callerName ?? nameof(this.RaiseOrQueueEvent)} drops event \"{eventName}\" " +
+                        $"(no event subscribers / no queue present).");
+                }
             }
         }
+
+        private void DequeueAndSubscribe<TEventArgs>(
+            EventHandler<TEventArgs> value,
+            ref EventHandler<TEventArgs> eventHandler,
+            Queue<TEventArgs> queue,
+            [CallerMemberName] string eventName = null) where TEventArgs : EventArgs
+        {
+            if (queue != null)
+            {
+                var previousSubscriptions = eventHandler;
+                eventHandler += value;
+
+                if (previousSubscriptions == null && eventHandler != null)
+                {
+                    this.logger.LogDebug(
+                        $"{nameof(this.DequeueAndSubscribe)} dequeues {queue.Count} event{(queue.Count == 1 ? "" : "s")} \"{eventName}\" " +
+                        $"from {queue.GetType().GetFormattedName()} for deferred delivery");
+
+                    foreach (var args in queue.TryDequeueAll())
+                    {
+                        eventHandler.Invoke(this, args);
+                    }
+                }
+            }
+            else
+            {
+                eventHandler += value;
+            }
+        }
+
 
         public void ResetCache()
         {
             this.logger.LogDebug("ResetCache");
-            this.cachedAppLinkReceivedEventArgs = null;
+
+            this.appLinkReceivedQueue.Clear();
         }
     }
 }
