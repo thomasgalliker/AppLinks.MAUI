@@ -16,27 +16,40 @@ namespace AppLinks.MAUI.Services
         private static IAppLinkHandler CreateAppLinkHandler()
         {
             var logger = IPlatformApplication.Current.Services.GetRequiredService<ILogger<AppLinkHandler>>();
+            var appLinkOptions = IPlatformApplication.Current.Services.GetRequiredService<AppLinkOptions>();
             var mainThread = IPlatformApplication.Current.Services.GetRequiredService<IMainThread>();
-            return new AppLinkHandler(logger, mainThread);
+            var appLinkProcessor = IPlatformApplication.Current.Services.GetRequiredService<IAppLinkProcessor>();
+            return new AppLinkHandler(logger, appLinkOptions, mainThread, appLinkProcessor);
         }
 
         private readonly ILogger logger;
+        private readonly AppLinkOptions options;
         private readonly IMainThread mainThread;
+        private readonly IAppLinkProcessor appLinkProcessor;
         private readonly Queue<AppLinkReceivedEventArgs> appLinkReceivedQueue = new Queue<AppLinkReceivedEventArgs>();
 
         private EventHandler<AppLinkReceivedEventArgs> appLinkReceivedEventHandler;
 
         internal AppLinkHandler(
             ILogger<AppLinkHandler> logger,
-            IMainThread mainThread)
+            AppLinkOptions options,
+            IMainThread mainThread,
+            IAppLinkProcessor appLinkProcessor)
         {
             this.logger = logger;
+            this.options = options;
             this.mainThread = mainThread;
+            this.appLinkProcessor = appLinkProcessor;
         }
 
         public void EnqueueAppLink(Uri uri)
         {
             this.logger.LogDebug($"EnqueueAppLink: uri={uri}");
+
+            if (this.options.EnableAppLinkProcessor)
+            {
+                this.appLinkProcessor.Process(uri);
+            }
 
             this.RaiseOrQueueEvent(
                 this.appLinkReceivedEventHandler,
