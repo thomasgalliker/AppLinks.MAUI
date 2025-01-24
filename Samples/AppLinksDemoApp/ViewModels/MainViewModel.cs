@@ -2,6 +2,7 @@
 using AppLinksDemoApp.Services.Navigation;
 using AppLinks.MAUI;
 using AppLinks.MAUI.Services;
+using AppLinksDemoApp.Services.AppLinks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Microsoft.Extensions.Logging;
@@ -16,6 +17,7 @@ namespace AppLinksDemoApp.ViewModels
         private readonly IAppLinkHandler appLinkHandler;
         private readonly IUriProcessor uriProcessor;
         private readonly IUriProcessorRules uriProcessorRules;
+        private readonly CustomAppLinkRules appLinkRules;
         private readonly ILauncher launcher;
 
         private IAsyncRelayCommand appearingCommand;
@@ -26,6 +28,7 @@ namespace AppLinksDemoApp.ViewModels
         private IAsyncRelayCommand addHomeRuleCommand;
         private IAsyncRelayCommand clearRulesCommand;
         private IAsyncRelayCommand processUriCommand;
+        private IAsyncRelayCommand clearPendingUrisCommand;
         private IAsyncRelayCommand<string> navigateToPageCommand;
         private IAsyncRelayCommand<string> navigateToModalPageCommand;
         private IAsyncRelayCommand<string> openUrlCommand;
@@ -38,6 +41,7 @@ namespace AppLinksDemoApp.ViewModels
             IAppLinkHandler appLinkHandler,
             IUriProcessor uriProcessor,
             IUriProcessorRules uriProcessorRules,
+            IAppLinkRules appLinkRules,
             ILauncher launcher)
         {
             this.logger = logger;
@@ -46,6 +50,7 @@ namespace AppLinksDemoApp.ViewModels
             this.appLinkHandler = appLinkHandler;
             this.uriProcessor = uriProcessor;
             this.uriProcessorRules = uriProcessorRules;
+            this.appLinkRules = (CustomAppLinkRules)appLinkRules;
             this.launcher = launcher;
         }
 
@@ -69,11 +74,21 @@ namespace AppLinksDemoApp.ViewModels
             {
                 this.TestUri = "https://example.com/home";
 
-                this.uriProcessor.RegisterCallback(
-                    UriRules.HomeRule,
+                // Register for app link calls backs.
+                // We use the static app link rules here.
+                // this.uriProcessor.RegisterCallback(StaticAppLinkRules.HomeRule,
+                //     uri => this.dialogService.DisplayAlertAsync(
+                //         StaticAppLinkRules.HomeRule.RuleId,
+                //         $"Callback for rule \"{StaticAppLinkRules.HomeRule.RuleId}\"{Environment.NewLine}{Environment.NewLine}" +
+                //         $"URI {uri}",
+                //         "OK"));
+
+                // Register for app link calls backs.
+                // We use injected app link rules here.
+                this.uriProcessor.RegisterCallback(this.appLinkRules.HomeRule,
                     uri => this.dialogService.DisplayAlertAsync(
-                        UriRules.HomeRule.RuleId,
-                        $"Callback for rule \"{UriRules.HomeRule.RuleId}\"{Environment.NewLine}{Environment.NewLine}" +
+                        this.appLinkRules.HomeRule.RuleId,
+                        $"Callback for rule \"{this.appLinkRules.HomeRule.RuleId}\"{Environment.NewLine}{Environment.NewLine}" +
                         $"URI {uri}",
                         "OK"));
             }
@@ -140,7 +155,11 @@ namespace AppLinksDemoApp.ViewModels
         {
             try
             {
-                this.uriProcessorRules.Add(UriRules.HomeRule);
+                // Add/update the app link rule "HomeRule" using static app link rules.
+                // this.uriProcessorRules.Add(StaticAppLinkRules.HomeRule);
+
+                // Add/update the app link rule "HomeRule" using injected app link rules.
+                this.uriProcessorRules.Add(this.appLinkRules.HomeRule);
             }
             catch (Exception ex)
             {
@@ -189,6 +208,24 @@ namespace AppLinksDemoApp.ViewModels
             {
                 this.logger.LogError(ex, "ProcessUriAsync failed with exception");
                 await this.dialogService.DisplayAlertAsync("Error", $"ProcessUriAsync failed with exception: {ex.Message}", "OK");
+            }
+        }
+
+        public ICommand ClearPendingUrisCommand
+        {
+            get => this.clearPendingUrisCommand ??= new AsyncRelayCommand(this.ClearPendingUrisAsync);
+        }
+
+        private async Task ClearPendingUrisAsync()
+        {
+            try
+            {
+                this.uriProcessor.Clear();
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError(ex, "ClearPendingUrisAsync failed with exception");
+                await this.dialogService.DisplayAlertAsync("Error", $"ClearPendingUrisAsync failed with exception: {ex.Message}", "OK");
             }
         }
 

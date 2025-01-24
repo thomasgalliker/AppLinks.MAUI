@@ -9,9 +9,10 @@ namespace AppLinksDemoApp
         {
             this.InitializeComponent();
 
-            // Register uri processing rules at startup of your app:
-            uriProcessorRules.Add(UriRules.HomeRule);
-            uriProcessorRules.Add(UriRules.SettingsRule);
+            // Register uri processing rules at startup of your app.
+            // Here we use static declarations of app link rules.
+            // uriProcessorRules.Add(StaticAppLinkRules.HomeRule);
+            // uriProcessorRules.Add(StaticAppLinkRules.SettingsRule);
 
             var mainPage = serviceProvider.GetRequiredService<MainPage>();
             this.MainPage = new NavigationPage(mainPage);

@@ -99,6 +99,10 @@
                 Command="{Binding ProcessUriCommand}"
                 Text="Process URI"
                 HorizontalOptions="Fill" />
+            <Button
+                Command="{Binding ClearPendingUrisCommand}"
+                Text="Clear pending URIs"
+                HorizontalOptions="Fill" />
 
             <controls:DividerLine />
         </VerticalStackLayout>

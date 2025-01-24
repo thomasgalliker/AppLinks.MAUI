@@ -2,7 +2,12 @@ using AppLinks.MAUI;
 
 namespace AppLinksDemoApp
 {
-    public static class UriRules
+    /// <summary>
+    /// You can either use static app link rules across your app.
+    /// With this solution, you lose the ability to inject further dependencies
+    /// used to check if the received app links are valid.
+    /// </summary>
+    public static class StaticAppLinkRules
     {
         public static readonly UriRule HomeRule = new UriRule(
             "HomeRule",

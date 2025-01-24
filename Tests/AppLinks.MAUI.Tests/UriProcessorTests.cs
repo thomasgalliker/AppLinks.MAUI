@@ -22,7 +22,7 @@ namespace AppLinks.MAUI.Tests
         }
 
         [Fact]
-        public void ShouldProcess()
+        public void Process_ShouldCallRegisteredCallbacks()
         {
             // Arrange
             var uris = new List<(string, Uri)>();
@@ -50,7 +50,7 @@ namespace AppLinks.MAUI.Tests
         }
 
         [Fact]
-        public void ShouldProcess_Queues()
+        public void RegisterCallback_ProcessesQueuedUris()
         {
             // Arrange
             var uris = new List<(string, Uri)>();
@@ -65,6 +65,27 @@ namespace AppLinks.MAUI.Tests
 
             // Act
             uriProcessor.RegisterCallback("SettingsPageRule", u => uris.Add(("SettingsPageRule", u)));
+
+            // Assert
+            uris.Should().HaveCount(2);
+            uris.ElementAt(0).Item1.Should().Be("HomePageRule");
+            uris.ElementAt(1).Item1.Should().Be("SettingsPageRule");
+        }
+
+        [Fact]
+        public void RegisterCallback_ProcessesQueuedUris_DropsDuplicateUris()
+        {
+            // Arrange
+            var uris = new List<(string, Uri)>();
+            var uriProcessor = this.autoMocker.CreateInstance<UriProcessor>(enablePrivate: true);
+            uriProcessor.Add(new UriRule("HomePageRule", uri => uri.Host == "example.com" && uri.AbsolutePath == "/home"));
+
+            uriProcessor.Process(new Uri("https://example.com/home"));
+            uriProcessor.Process(new Uri("https://example.com/home"));
+            uriProcessor.Process(new Uri("https://example.com/home"));
+
+            // Act
+            uriProcessor.RegisterCallback("HomePageRule", u => uris.Add(("HomePageRule", u)));
 
             // Assert
             uris.Should().HaveCount(1);

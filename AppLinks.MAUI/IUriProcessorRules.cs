@@ -14,9 +14,13 @@ namespace AppLinks.MAUI
         void Add(UriRule rule);
 
         /// <summary>
-        /// Removes a rules by given <paramref name="ruleId"/>.
+        /// Removes a rule by given <paramref name="rule"/>.
         /// </summary>
-        /// <param name="ruleId"></param>
+        void Remove(UriRule rule);
+
+        /// <summary>
+        /// Removes a rule by given <paramref name="ruleId"/>.
+        /// </summary>
         void Remove(string ruleId);
 
         /// <summary>

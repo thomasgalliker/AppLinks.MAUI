@@ -15,7 +15,8 @@ namespace AppLinks.MAUI
         private static IUriProcessor CreateUriProcessor()
         {
             var logger = IPlatformApplication.Current.Services.GetRequiredService<ILogger<UriProcessor>>();
-            return new UriProcessor(logger);
+            var appLinkRules = IPlatformApplication.Current.Services.GetService<IAppLinkRules>();
+            return new UriProcessor(logger, appLinkRules);
         }
 
         private readonly Dictionary<string, Action<Uri>> ruleActions = new Dictionary<string, Action<Uri>>();
@@ -27,11 +28,20 @@ namespace AppLinks.MAUI
         private Queue<Uri> pendingUris = new Queue<Uri>();
 
         internal UriProcessor(
-            ILogger<UriProcessor> logger)
+            ILogger<UriProcessor> logger,
+            IAppLinkRules appLinkRules)
         {
             ArgumentNullException.ThrowIfNull(logger);
 
             this.logger = logger;
+
+            if (appLinkRules != null)
+            {
+                foreach (var appLinkRule in appLinkRules.Get())
+                {
+                    this.Add(appLinkRule);
+                }
+            }
         }
 
         public void RegisterCallback(string ruleId, Action<Uri> action)
@@ -40,6 +50,8 @@ namespace AppLinks.MAUI
             ArgumentNullException.ThrowIfNull(action);
 
             this.ruleActions[ruleId] = action;
+
+            this.ProcessPendingUris();
         }
 
         public void RegisterCallback(UriRule rule, Action<Uri> action)
@@ -73,10 +85,17 @@ namespace AppLinks.MAUI
         {
             ArgumentNullException.ThrowIfNull(rule);
 
+            this.Remove(rule.RuleId);
             this.rules.Add(rule);
 
-            // Process any pending Uris that match this new rule
             this.ProcessPendingUris();
+        }
+
+        public void Remove(UriRule rule)
+        {
+            ArgumentNullException.ThrowIfNull(rule);
+
+            this.Remove(rule.RuleId);
         }
 
         public void Remove(string ruleId)
@@ -139,7 +158,6 @@ namespace AppLinks.MAUI
         {
             lock (this.lockObj)
             {
-                this.ruleActions.Clear();
                 this.pendingUris.Clear();
             }
         }
@@ -149,9 +167,6 @@ namespace AppLinks.MAUI
             this.rules.Clear();
         }
 
-        /// <summary>
-        /// Processes all pending Uris that now match existing rules.
-        /// </summary>
         private void ProcessPendingUris()
         {
             lock (this.lockObj)
@@ -166,6 +181,8 @@ namespace AppLinks.MAUI
                     }
                 }
 
+                // This not only updates the pending URI list
+                // it also eliminates duplicate URIs from the queue.
                 this.pendingUris = new Queue<Uri>(this.pendingUris.Except(processedUris));
             }
         }
