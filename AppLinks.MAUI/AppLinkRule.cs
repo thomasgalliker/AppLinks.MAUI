@@ -3,11 +3,11 @@ using System.Diagnostics;
 namespace AppLinks.MAUI
 {
     [DebuggerDisplay("{RuleId}")]
-    public class UriRule
+    public class AppLinkRule
     {
         private readonly Func<Uri, bool> matchCondition;
 
-        public UriRule(string ruleId, Func<Uri, bool> matchCondition)
+        public AppLinkRule(string ruleId, Func<Uri, bool> matchCondition)
         {
             ArgumentException.ThrowIfNullOrEmpty(ruleId);
             ArgumentNullException.ThrowIfNull(matchCondition);

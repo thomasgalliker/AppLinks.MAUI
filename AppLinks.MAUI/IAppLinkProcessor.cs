@@ -1,11 +1,11 @@
 namespace AppLinks.MAUI
 {
-    public interface IUriProcessor
+    public interface IAppLinkProcessor
     {
         /// <summary>
-        /// Gets the singleton instance of <see cref="IUriProcessor"/>.
+        /// Gets the singleton instance of <see cref="IAppLinkProcessor"/>.
         /// </summary>
-        public static IUriProcessor Current { get; set; } = UriProcessor.Current;
+        public static IAppLinkProcessor Current { get; set; } = AppLinkProcessor.Current;
 
         /// <summary>
         /// Registers a callback <paramref name="action"/> for a specific rule.
@@ -15,7 +15,7 @@ namespace AppLinks.MAUI
         /// <summary>
         /// Registers a callback <paramref name="action"/> for a specific rule.
         /// </summary>
-        void RegisterCallback(UriRule rule, Action<Uri> action);
+        void RegisterCallback(AppLinkRule rule, Action<Uri> action);
 
         /// <summary>
         /// Removes all callbacks for a specific rule.
@@ -25,7 +25,7 @@ namespace AppLinks.MAUI
         /// <summary>
         /// Removes all callbacks for a specific rule.
         /// </summary>
-        bool RemoveCallback(UriRule rule);
+        bool RemoveCallback(AppLinkRule rule);
 
         /// <summary>
         /// Removes all callbacks for all rules.

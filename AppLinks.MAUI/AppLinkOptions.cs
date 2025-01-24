@@ -9,16 +9,16 @@ namespace AppLinks.MAUI
         public virtual bool EnableSendOnAppLinkRequestReceived { get; set; } = true;
 
         /// <summary>
-        /// Enables URI processing using <see cref="IUriProcessor"/>.
+        /// Enables URI processing using <see cref="IAppLinkProcessor"/>.
         /// Default: <c>true</c>
         /// </summary>
-        public virtual bool EnableUriProcessor { get; set; } = true;
+        public virtual bool EnableAppLinkProcessor { get; set; } = true;
 
         public override string ToString()
         {
             return $"[{nameof(AppLinkOptions)}: " +
                    $"{nameof(this.EnableSendOnAppLinkRequestReceived)}={this.EnableSendOnAppLinkRequestReceived}, " +
-                   $"{nameof(this.EnableUriProcessor)}={this.EnableUriProcessor}" +
+                   $"{nameof(this.EnableAppLinkProcessor)}={this.EnableAppLinkProcessor}" +
                    $"]";
         }
     }

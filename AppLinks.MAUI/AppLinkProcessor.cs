@@ -2,33 +2,33 @@ using Microsoft.Extensions.Logging;
 
 namespace AppLinks.MAUI
 {
-    internal class UriProcessor : IUriProcessor, IUriProcessorRules
+    internal class AppLinkProcessor : IAppLinkProcessor, IAppLinkRuleManager
     {
-        private static readonly Lazy<IUriProcessor> Implementation =
-            new Lazy<IUriProcessor>(CreateUriProcessor, LazyThreadSafetyMode.PublicationOnly);
+        private static readonly Lazy<IAppLinkProcessor> Implementation =
+            new Lazy<IAppLinkProcessor>(CreateAppLinkProcessor, LazyThreadSafetyMode.PublicationOnly);
 
-        public static IUriProcessor Current
+        public static IAppLinkProcessor Current
         {
             get => Implementation.Value;
         }
 
-        private static IUriProcessor CreateUriProcessor()
+        private static IAppLinkProcessor CreateAppLinkProcessor()
         {
-            var logger = IPlatformApplication.Current.Services.GetRequiredService<ILogger<UriProcessor>>();
+            var logger = IPlatformApplication.Current.Services.GetRequiredService<ILogger<AppLinkProcessor>>();
             var appLinkRules = IPlatformApplication.Current.Services.GetService<IAppLinkRules>();
-            return new UriProcessor(logger, appLinkRules);
+            return new AppLinkProcessor(logger, appLinkRules);
         }
 
         private readonly Dictionary<string, Action<Uri>> ruleActions = new Dictionary<string, Action<Uri>>();
 
-        private readonly ILogger<UriProcessor> logger;
+        private readonly ILogger<AppLinkProcessor> logger;
         private readonly object lockObj = new object();
-        private readonly List<UriRule> rules = new List<UriRule>();
+        private readonly List<AppLinkRule> rules = new List<AppLinkRule>();
 
         private Queue<Uri> pendingUris = new Queue<Uri>();
 
-        internal UriProcessor(
-            ILogger<UriProcessor> logger,
+        internal AppLinkProcessor(
+            ILogger<AppLinkProcessor> logger,
             IAppLinkRules appLinkRules)
         {
             ArgumentNullException.ThrowIfNull(logger);
@@ -54,7 +54,7 @@ namespace AppLinks.MAUI
             this.ProcessPendingUris();
         }
 
-        public void RegisterCallback(UriRule rule, Action<Uri> action)
+        public void RegisterCallback(AppLinkRule rule, Action<Uri> action)
         {
             ArgumentNullException.ThrowIfNull(rule);
             ArgumentNullException.ThrowIfNull(action);
@@ -69,7 +69,7 @@ namespace AppLinks.MAUI
             return this.ruleActions.Remove(ruleId);
         }
 
-        public bool RemoveCallback(UriRule rule)
+        public bool RemoveCallback(AppLinkRule rule)
         {
             ArgumentNullException.ThrowIfNull(rule);
 
@@ -81,7 +81,7 @@ namespace AppLinks.MAUI
             this.ruleActions.Clear();
         }
 
-        public void Add(UriRule rule)
+        public void Add(AppLinkRule rule)
         {
             ArgumentNullException.ThrowIfNull(rule);
 
@@ -91,7 +91,7 @@ namespace AppLinks.MAUI
             this.ProcessPendingUris();
         }
 
-        public void Remove(UriRule rule)
+        public void Remove(AppLinkRule rule)
         {
             ArgumentNullException.ThrowIfNull(rule);
 
@@ -154,7 +154,7 @@ namespace AppLinks.MAUI
             return false;
         }
 
-        void IUriProcessor.Clear()
+        void IAppLinkProcessor.Clear()
         {
             lock (this.lockObj)
             {
@@ -162,7 +162,7 @@ namespace AppLinks.MAUI
             }
         }
 
-        void IUriProcessorRules.Clear()
+        void IAppLinkRuleManager.Clear()
         {
             this.rules.Clear();
         }

@@ -7,6 +7,6 @@ namespace AppLinks.MAUI
     /// </summary>
     public interface IAppLinkRules
     {
-        IEnumerable<UriRule> Get();
+        IEnumerable<AppLinkRule> Get();
     }
 }

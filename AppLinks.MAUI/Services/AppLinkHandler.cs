@@ -18,14 +18,14 @@ namespace AppLinks.MAUI.Services
             var logger = IPlatformApplication.Current.Services.GetRequiredService<ILogger<AppLinkHandler>>();
             var appLinkOptions = IPlatformApplication.Current.Services.GetRequiredService<AppLinkOptions>();
             var mainThread = IPlatformApplication.Current.Services.GetRequiredService<IMainThread>();
-            var uriProcessor = IPlatformApplication.Current.Services.GetRequiredService<IUriProcessor>();
-            return new AppLinkHandler(logger, appLinkOptions, mainThread, uriProcessor);
+            var appLinkProcessor = IPlatformApplication.Current.Services.GetRequiredService<IAppLinkProcessor>();
+            return new AppLinkHandler(logger, appLinkOptions, mainThread, appLinkProcessor);
         }
 
         private readonly ILogger logger;
         private readonly AppLinkOptions options;
         private readonly IMainThread mainThread;
-        private readonly IUriProcessor uriProcessor;
+        private readonly IAppLinkProcessor appLinkProcessor;
         private readonly Queue<AppLinkReceivedEventArgs> appLinkReceivedQueue = new Queue<AppLinkReceivedEventArgs>();
 
         private EventHandler<AppLinkReceivedEventArgs> appLinkReceivedEventHandler;
@@ -34,21 +34,21 @@ namespace AppLinks.MAUI.Services
             ILogger<AppLinkHandler> logger,
             AppLinkOptions options,
             IMainThread mainThread,
-            IUriProcessor uriProcessor)
+            IAppLinkProcessor appLinkProcessor)
         {
             this.logger = logger;
             this.options = options;
             this.mainThread = mainThread;
-            this.uriProcessor = uriProcessor;
+            this.appLinkProcessor = appLinkProcessor;
         }
 
         public void EnqueueAppLink(Uri uri)
         {
             this.logger.LogDebug($"EnqueueAppLink: uri={uri}");
 
-            if (this.options.EnableUriProcessor)
+            if (this.options.EnableAppLinkProcessor)
             {
-                this.uriProcessor.Process(uri);
+                this.appLinkProcessor.Process(uri);
             }
 
             this.RaiseOrQueueEvent(

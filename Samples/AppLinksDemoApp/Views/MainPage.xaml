@@ -76,7 +76,7 @@
 
             <Label
                 Style="{StaticResource Heading2LabelStyle}"
-                Text="IUriProcessorRules" />
+                Text="IAppLinkRuleManager" />
 
             <Button
                 Command="{Binding AddHomeRuleCommand}"
@@ -90,7 +90,7 @@
             <controls:DividerLine />
             <Label
                 Style="{StaticResource Heading2LabelStyle}"
-                Text="IUriProcessor" />
+                Text="IAppLinkProcessor" />
 
             <Entry
                 Placeholder="https://"

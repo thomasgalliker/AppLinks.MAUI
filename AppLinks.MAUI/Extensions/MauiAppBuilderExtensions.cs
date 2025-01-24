@@ -93,8 +93,8 @@ namespace AppLinks.MAUI
             builder.Services.AddSingleton<AppLinkOptions>(defaultOptions);
             builder.Services.AddSingleton<IMainThread>(_ => EssentialsMainThread.Current);
             builder.Services.AddSingleton<IAppLinkHandler>(_ => IAppLinkHandler.Current);
-            builder.Services.AddSingleton<IUriProcessorRules>(_ => IUriProcessorRules.Current);
-            builder.Services.AddSingleton<IUriProcessor>(_ => IUriProcessor.Current);
+            builder.Services.AddSingleton<IAppLinkRuleManager>(_ => IAppLinkRuleManager.Current);
+            builder.Services.AddSingleton<IAppLinkProcessor>(_ => IAppLinkProcessor.Current);
 
             return builder;
         }

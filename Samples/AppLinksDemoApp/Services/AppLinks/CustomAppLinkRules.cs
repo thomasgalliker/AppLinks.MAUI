@@ -14,15 +14,15 @@ namespace AppLinksDemoApp.Services.AppLinks
         {
         }
 
-        public readonly UriRule HomeRule = new UriRule(
+        public readonly AppLinkRule HomeRule = new AppLinkRule(
             "HomeRule",
             uri => uri.Host == "example.com" && uri.AbsolutePath == "/home");
 
-        public readonly UriRule SettingsRule = new UriRule(
+        public readonly AppLinkRule SettingsRule = new AppLinkRule(
             "SettingsRule",
             uri => uri.Host == "example.com" && uri.AbsolutePath == "/settings");
 
-        public IEnumerable<UriRule> Get()
+        public IEnumerable<AppLinkRule> Get()
         {
             yield return this.HomeRule;
             yield return this.SettingsRule;

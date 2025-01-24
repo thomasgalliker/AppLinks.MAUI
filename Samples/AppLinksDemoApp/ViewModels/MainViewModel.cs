@@ -15,8 +15,8 @@ namespace AppLinksDemoApp.ViewModels
         private readonly INavigationService navigationService;
         private readonly IDialogService dialogService;
         private readonly IAppLinkHandler appLinkHandler;
-        private readonly IUriProcessor uriProcessor;
-        private readonly IUriProcessorRules uriProcessorRules;
+        private readonly IAppLinkProcessor appLinkProcessor;
+        private readonly IAppLinkRuleManager appLinkRuleManager;
         private readonly CustomAppLinkRules appLinkRules;
         private readonly ILauncher launcher;
 
@@ -39,8 +39,8 @@ namespace AppLinksDemoApp.ViewModels
             INavigationService navigationService,
             IDialogService dialogService,
             IAppLinkHandler appLinkHandler,
-            IUriProcessor uriProcessor,
-            IUriProcessorRules uriProcessorRules,
+            IAppLinkProcessor appLinkProcessor,
+            IAppLinkRuleManager appLinkRuleManager,
             IAppLinkRules appLinkRules,
             ILauncher launcher)
         {
@@ -48,8 +48,8 @@ namespace AppLinksDemoApp.ViewModels
             this.navigationService = navigationService;
             this.dialogService = dialogService;
             this.appLinkHandler = appLinkHandler;
-            this.uriProcessor = uriProcessor;
-            this.uriProcessorRules = uriProcessorRules;
+            this.appLinkProcessor = appLinkProcessor;
+            this.appLinkRuleManager = appLinkRuleManager;
             this.appLinkRules = (CustomAppLinkRules)appLinkRules;
             this.launcher = launcher;
         }
@@ -76,7 +76,7 @@ namespace AppLinksDemoApp.ViewModels
 
                 // Register for app link calls backs.
                 // We use the static app link rules here.
-                // this.uriProcessor.RegisterCallback(StaticAppLinkRules.HomeRule,
+                // IAppLinkProcessor.Current.RegisterCallback(StaticAppLinkRules.HomeRule,
                 //     uri => this.dialogService.DisplayAlertAsync(
                 //         StaticAppLinkRules.HomeRule.RuleId,
                 //         $"Callback for rule \"{StaticAppLinkRules.HomeRule.RuleId}\"{Environment.NewLine}{Environment.NewLine}" +
@@ -85,7 +85,7 @@ namespace AppLinksDemoApp.ViewModels
 
                 // Register for app link calls backs.
                 // We use injected app link rules here.
-                this.uriProcessor.RegisterCallback(this.appLinkRules.HomeRule,
+                this.appLinkProcessor.RegisterCallback(this.appLinkRules.HomeRule,
                     uri => this.dialogService.DisplayAlertAsync(
                         this.appLinkRules.HomeRule.RuleId,
                         $"Callback for rule \"{this.appLinkRules.HomeRule.RuleId}\"{Environment.NewLine}{Environment.NewLine}" +
@@ -156,10 +156,10 @@ namespace AppLinksDemoApp.ViewModels
             try
             {
                 // Add/update the app link rule "HomeRule" using static app link rules.
-                // this.uriProcessorRules.Add(StaticAppLinkRules.HomeRule);
+                // IAppLinkRuleManager.Current.Add(StaticAppLinkRules.HomeRule);
 
                 // Add/update the app link rule "HomeRule" using injected app link rules.
-                this.uriProcessorRules.Add(this.appLinkRules.HomeRule);
+                this.appLinkRuleManager.Add(this.appLinkRules.HomeRule);
             }
             catch (Exception ex)
             {
@@ -177,7 +177,7 @@ namespace AppLinksDemoApp.ViewModels
         {
             try
             {
-                this.uriProcessorRules.Clear();
+                this.appLinkRuleManager.Clear();
             }
             catch (Exception ex)
             {
@@ -202,7 +202,7 @@ namespace AppLinksDemoApp.ViewModels
             try
             {
                 var uri = new Uri(this.TestUri);
-                this.uriProcessor.Process(uri);
+                this.appLinkProcessor.Process(uri);
             }
             catch (Exception ex)
             {
@@ -220,7 +220,7 @@ namespace AppLinksDemoApp.ViewModels
         {
             try
             {
-                this.uriProcessor.Clear();
+                this.appLinkProcessor.Clear();
             }
             catch (Exception ex)
             {

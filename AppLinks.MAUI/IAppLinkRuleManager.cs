@@ -1,22 +1,22 @@
 namespace AppLinks.MAUI
 {
-    public interface IUriProcessorRules
+    public interface IAppLinkRuleManager
     {
         /// <summary>
-        /// Gets the singleton instance of <see cref="IUriProcessor"/>.
+        /// Gets the singleton instance of <see cref="IAppLinkProcessor"/>.
         /// </summary>
-        public static IUriProcessorRules Current { get; set; } = (IUriProcessorRules)UriProcessor.Current;
+        public static IAppLinkRuleManager Current { get; set; } = (IAppLinkRuleManager)AppLinkProcessor.Current;
 
         /// <summary>
         /// Adds a new URI processing rule.
         /// </summary>
         /// <param name="rule"></param>
-        void Add(UriRule rule);
+        void Add(AppLinkRule rule);
 
         /// <summary>
         /// Removes a rule by given <paramref name="rule"/>.
         /// </summary>
-        void Remove(UriRule rule);
+        void Remove(AppLinkRule rule);
 
         /// <summary>
         /// Removes a rule by given <paramref name="ruleId"/>.

@@ -5,14 +5,14 @@ namespace AppLinksDemoApp
 {
     public partial class App : Application
     {
-        public App(IServiceProvider serviceProvider, IUriProcessorRules uriProcessorRules)
+        public App(IServiceProvider serviceProvider, IAppLinkRuleManager appLinkRuleManager)
         {
             this.InitializeComponent();
 
             // Register uri processing rules at startup of your app.
             // Here we use static declarations of app link rules.
-            // uriProcessorRules.Add(StaticAppLinkRules.HomeRule);
-            // uriProcessorRules.Add(StaticAppLinkRules.SettingsRule);
+            // appLinkRuleManager.Add(StaticAppLinkRules.HomeRule);
+            // appLinkRuleManager.Add(StaticAppLinkRules.SettingsRule);
 
             var mainPage = serviceProvider.GetRequiredService<MainPage>();
             this.MainPage = new NavigationPage(mainPage);
