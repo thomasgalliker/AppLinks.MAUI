@@ -220,7 +220,7 @@ namespace AppLinksDemoApp.ViewModels
         {
             try
             {
-                this.appLinkProcessor.Clear();
+                this.appLinkProcessor.ClearCache();
             }
             catch (Exception ex)
             {

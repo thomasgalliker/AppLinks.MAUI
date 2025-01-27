@@ -19,7 +19,7 @@ namespace AppLinks.MAUI
             return new AppLinkProcessor(logger, appLinkRules);
         }
 
-        private readonly Dictionary<string, Action<Uri>> ruleActions = new Dictionary<string, Action<Uri>>();
+        private readonly Dictionary<string, Action<Uri>> ruleCallbacks = new Dictionary<string, Action<Uri>>();
 
         private readonly ILogger<AppLinkProcessor> logger;
         private readonly object lockObj = new object();
@@ -49,7 +49,14 @@ namespace AppLinks.MAUI
             ArgumentException.ThrowIfNullOrEmpty(ruleId);
             ArgumentNullException.ThrowIfNull(action);
 
-            this.ruleActions[ruleId] = action;
+            if (this.rules.All(r => r.RuleId != ruleId))
+            {
+                this.logger.LogWarning(
+                    $"RegisterCallback: Rule with ID \"{ruleId}\" is not registered. " +
+                    $"Call {nameof(IAppLinkRuleManager)}.{nameof(IAppLinkRuleManager.Add)} to register new app link rules.");
+            }
+
+            this.ruleCallbacks[ruleId] = action;
 
             this.ProcessPendingUris();
         }
@@ -66,7 +73,7 @@ namespace AppLinks.MAUI
         {
             ArgumentException.ThrowIfNullOrEmpty(ruleId);
 
-            return this.ruleActions.Remove(ruleId);
+            return this.ruleCallbacks.Remove(ruleId);
         }
 
         public bool RemoveCallback(AppLinkRule rule)
@@ -78,7 +85,7 @@ namespace AppLinks.MAUI
 
         public void ClearCallbacks()
         {
-            this.ruleActions.Clear();
+            this.ruleCallbacks.Clear();
         }
 
         public void Add(AppLinkRule rule)
@@ -107,10 +114,6 @@ namespace AppLinks.MAUI
             }
         }
 
-        /// <summary>
-        /// Processes a Uri immediately if a matching rule exists.
-        /// Otherwise, queues the Uri for later processing.
-        /// </summary>
         public void Process(Uri uri)
         {
             ArgumentNullException.ThrowIfNull(uri);
@@ -137,7 +140,7 @@ namespace AppLinks.MAUI
                 {
                     if (rule.Matches(uri))
                     {
-                        var action = this.ruleActions.GetValueOrDefault(rule.RuleId);
+                        var action = this.ruleCallbacks.GetValueOrDefault(rule.RuleId);
                         if (action != null)
                         {
                             action(uri);
@@ -154,7 +157,7 @@ namespace AppLinks.MAUI
             return false;
         }
 
-        void IAppLinkProcessor.Clear()
+        public void ClearCache()
         {
             lock (this.lockObj)
             {
