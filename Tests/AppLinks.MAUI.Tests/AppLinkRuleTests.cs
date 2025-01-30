@@ -10,10 +10,10 @@ namespace AppLinks.MAUI.Tests
         {
             // Arrange
             var testUri = new Uri("https://example.com/test/uri");
-            var uriRule = new AppLinkRule("Rule1", uri => uri.Host == "example.com");
+            var appLinkRule = new AppLinkRule("AppLinkRule1", uri => uri.Host == "example.com");
 
             // Act
-            var matches = uriRule.Matches(testUri);
+            var matches = appLinkRule.Matches(testUri);
 
             // Assert
             matches.Should().BeTrue();
@@ -24,13 +24,41 @@ namespace AppLinks.MAUI.Tests
         {
             // Arrange
             var testUri = new Uri("https://localhost");
-            var uriRule = new AppLinkRule("Rule1", uri => uri.Host == "example.com");
+            var appLinkRule = new AppLinkRule("AppLinkRule1", uri => uri.Host == "example.com");
 
             // Act
-            var matches = uriRule.Matches(testUri);
+            var matches = appLinkRule.Matches(testUri);
 
             // Assert
             matches.Should().BeFalse();
+        }
+
+        [Fact]
+        public void ShouldBeEqual_False()
+        {
+            // Arrange
+            var appLinkRule1 = new AppLinkRule("AppLinkRule1", uri => true);
+            var appLinkRule2 = new AppLinkRule("AppLinkRule2", uri => false);
+
+            // Act
+            var isUnequal = appLinkRule1 != appLinkRule2;
+
+            // Assert
+            isUnequal.Should().BeTrue();
+        }
+
+        [Fact]
+        public void ShouldBeEqual_True()
+        {
+            // Arrange
+            var appLinkRule1 = new AppLinkRule("AppLinkRule", uri => true);
+            var appLinkRule2 = new AppLinkRule("applinkrule", uri => false);
+
+            // Act
+            var isEqual = appLinkRule1 == appLinkRule2;
+
+            // Assert
+            isEqual.Should().BeTrue();
         }
     }
 }
