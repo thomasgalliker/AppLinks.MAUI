@@ -136,6 +136,7 @@ steps:
     Contents: |
      **\bin\$(BuildConfiguration)\**
      **\bin\*.nupkg
+     **\bin\*.snupkg
 
     TargetFolder: '$(Build.ArtifactStagingDirectory)'
      

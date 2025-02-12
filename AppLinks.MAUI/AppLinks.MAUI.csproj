@@ -44,7 +44,11 @@
 
 1.0
 - Initial release.
-    </PackageReleaseNotes>
+    </PackageReleaseNotes>    
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <EmbedAllSources>true</EmbedAllSources>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
   </PropertyGroup>
 
   <ItemGroup>
