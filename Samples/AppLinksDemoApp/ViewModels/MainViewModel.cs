@@ -19,6 +19,7 @@ namespace AppLinksDemoApp.ViewModels
         private readonly IAppLinkRuleManager appLinkRuleManager;
         private readonly CustomAppLinkRules appLinkRules;
         private readonly ILauncher launcher;
+        private readonly IBrowser browser;
 
         private IAsyncRelayCommand appearingCommand;
         private bool isInitialized;
@@ -33,6 +34,7 @@ namespace AppLinksDemoApp.ViewModels
         private IAsyncRelayCommand<string> navigateToModalPageCommand;
         private IAsyncRelayCommand<string> openUrlCommand;
         private string testUri;
+        private IAsyncRelayCommand openBrowserCommand;
 
         public MainViewModel(
             ILogger<MainViewModel> logger,
@@ -42,7 +44,8 @@ namespace AppLinksDemoApp.ViewModels
             IAppLinkProcessor appLinkProcessor,
             IAppLinkRuleManager appLinkRuleManager,
             IAppLinkRules appLinkRules,
-            ILauncher launcher)
+            ILauncher launcher,
+            IBrowser browser)
         {
             this.logger = logger;
             this.navigationService = navigationService;
@@ -52,6 +55,7 @@ namespace AppLinksDemoApp.ViewModels
             this.appLinkRuleManager = appLinkRuleManager;
             this.appLinkRules = (CustomAppLinkRules)appLinkRules;
             this.launcher = launcher;
+            this.browser = browser;
         }
 
         public IAsyncRelayCommand AppearingCommand
@@ -226,6 +230,34 @@ namespace AppLinksDemoApp.ViewModels
             {
                 this.logger.LogError(ex, "ClearPendingUrisAsync failed with exception");
                 await this.dialogService.DisplayAlertAsync("Error", $"ClearPendingUrisAsync failed with exception: {ex.Message}", "OK");
+            }
+        }
+
+        public ICommand OpenBrowserCommand
+        {
+            get => this.openBrowserCommand ??= new AsyncRelayCommand(this.OpenBrowserAsync);
+        }
+
+        private async Task OpenBrowserAsync()
+        {
+            try
+            {
+                var options = new BrowserLaunchOptions
+                {
+                    LaunchMode = BrowserLaunchMode.SystemPreferred,
+                    TitleMode = BrowserTitleMode.Show,
+                    PreferredToolbarColor = Color.FromArgb("#2E8B57"),
+                    PreferredControlColor = Colors.White,
+                };
+
+                var uri = new Uri("https://github.com/thomasgalliker/AppLinks.MAUI");
+
+                await this.browser.OpenAsync(uri, options);
+            }
+            catch (Exception ex)
+            {
+                this.logger.LogError(ex, "OpenBrowserAsync failed with exception");
+                await this.dialogService.DisplayAlertAsync("Error", $"OpenBrowserAsync failed with exception: {ex.Message}", "OK");
             }
         }
 

@@ -88,10 +88,10 @@
                 HorizontalOptions="Fill" />
 
             <controls:DividerLine />
+
             <Label
                 Style="{StaticResource Heading2LabelStyle}"
                 Text="IAppLinkProcessor" />
-
             <Entry
                 Placeholder="https://"
                 Text="{Binding TestUri}" />
@@ -105,6 +105,14 @@
                 HorizontalOptions="Fill" />
 
             <controls:DividerLine />
+
+            <Label
+                Style="{StaticResource Heading2LabelStyle}"
+                Text="Interaction Checks" />
+            <Button
+                Command="{Binding OpenBrowserCommand}"
+                Text="Open Browser" />
+
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>
