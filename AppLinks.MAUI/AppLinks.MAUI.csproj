@@ -39,7 +39,13 @@
     <Company>superdev GmbH</Company>
     <Copyright>Copyright $([System.DateTime]::Now.ToString(`yyyy`)) © Thomas Galliker</Copyright>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
-    <PackageReleaseNotes>1.1
+    <PackageReleaseNotes>1.3
+- Refactor Android app link handling for better efficiency in OnCreate and OnNewIntent.
+
+1.2
+- Add symbols to nuget package.
+
+1.1
 - Use queue to cache received app link URLs.
 
 1.0
