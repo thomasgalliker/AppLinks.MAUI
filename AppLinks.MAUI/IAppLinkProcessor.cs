@@ -9,11 +9,20 @@ namespace AppLinks.MAUI
 
         /// <summary>
         /// Registers a callback <paramref name="action"/> for a specific rule.
-        /// </summary>
-        /// <remarks>
         /// This method is called by the consumer that expects
         /// app link data from a certain <paramref name="ruleId"/>.
         /// This could be a view model or just another service.
+        /// </summary>
+        /// <remarks>
+        /// Don't forget to call <see cref="RemoveCallback(string)"/> or <see cref="RemoveCallback(AppLinkRule)"/>
+        /// when the consumer is no longer interested in the app link data for the given rule.
+        /// </remarks>
+        void RegisterCallback(string ruleId, Action<Uri> action);
+
+        /// <summary>
+        /// <inheritdoc cref="RegisterCallback(string,System.Action{System.Uri})"/>
+        /// </summary>
+        /// <remarks>
         /// Don't forget to call <see cref="RemoveCallback(object, string)"/> or <see cref="RemoveCallback(object, AppLinkRule)"/>
         /// when the consumer is no longer interested in the app link data for the given rule.
         /// </remarks>
@@ -21,11 +30,20 @@ namespace AppLinks.MAUI
 
         /// <summary>
         /// Registers a callback <paramref name="action"/> for a specific rule.
-        /// </summary>
-        /// <remarks>
         /// This method is called by the consumer that expects
         /// app link data from a certain <paramref name="rule"/>.
         /// This could be a view model or just another service.
+        /// </summary>
+        /// <remarks>
+        /// Don't forget to call <see cref="RemoveCallback(object, string)"/> or <see cref="RemoveCallback(object, AppLinkRule)"/>
+        /// when the consumer is no longer interested in the app link data for the given rule.
+        /// </remarks>
+        void RegisterCallback(AppLinkRule rule, Action<Uri> action);
+
+        /// <summary>
+        /// <inheritdoc cref="RegisterCallback(AppLinkRule,System.Action{System.Uri})"/>
+        /// </summary>
+        /// <remarks>
         /// Don't forget to call <see cref="RemoveCallback(object, string)"/> or <see cref="RemoveCallback(object, AppLinkRule)"/>
         /// when the consumer is no longer interested in the app link data for the given rule.
         /// </remarks>
@@ -34,22 +52,32 @@ namespace AppLinks.MAUI
         /// <summary>
         /// Removes all callbacks for a specific rule.
         /// </summary>
+        bool RemoveCallback(string ruleId);
+
+        /// <summary>
+        /// <inheritdoc cref="RemoveCallback(string)"/>
+        /// </summary>
         bool RemoveCallback(object target, string ruleId);
 
         /// <summary>
         /// Removes all callbacks for a specific rule.
         /// </summary>
-        bool RemoveCallback(object target, AppLinkRule rule);
+        bool RemoveCallback(AppLinkRule rule);
 
         /// <summary>
-        /// Removes all callbacks for all rules of a given <paramref name="target"/>.
+        /// <inheritdoc cref="RemoveCallback(AppLinkRule)"/>
         /// </summary>
-        void ClearCallbacks(object target);
+        bool RemoveCallback(object target, AppLinkRule rule);
 
         /// <summary>
         /// Removes all callbacks for all rules.
         /// </summary>
         void ClearCallbacks();
+
+        /// <summary>
+        /// Removes all callbacks for all rules of a given <paramref name="target"/>.
+        /// </summary>
+        void ClearCallbacks(object target);
 
         /// <summary>
         /// Processes the given <paramref name="uri"/> with all registered rules.
