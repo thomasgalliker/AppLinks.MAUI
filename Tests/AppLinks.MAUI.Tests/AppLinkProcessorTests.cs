@@ -34,9 +34,9 @@ namespace AppLinks.MAUI.Tests
             processor.Add(new AppLinkRule("SettingsPageRule", uri => uri.Host == "example.com" && uri.AbsolutePath == "/settings"));
             processor.Add(new AppLinkRule("QueryActionRule", uri => uri.Host == "example.com" && uri.Query.Contains("action=view")));
 
-            processor.RegisterCallback(this, "HomePageRule", u => uris.Add(("HomePageRule", u)));
-            processor.RegisterCallback(this, "SettingsPageRule", u => uris.Add(("SettingsPageRule", u)));
-            processor.RegisterCallback(this, "QueryActionRule", u => uris.Add(("QueryActionRule", u)));
+            processor.RegisterCallback("HomePageRule", u => uris.Add(("HomePageRule", u)));
+            processor.RegisterCallback("SettingsPageRule", u => uris.Add(("SettingsPageRule", u)));
+            processor.RegisterCallback("QueryActionRule", u => uris.Add(("QueryActionRule", u)));
 
             // Act
             processor.Process(new Uri("https://example.com/home"));

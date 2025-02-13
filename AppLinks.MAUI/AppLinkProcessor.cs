@@ -1,3 +1,4 @@
+using AppLinks.MAUI.Extensions;
 using AppLinks.MAUI.Services;
 using Microsoft.Extensions.Logging;
 
@@ -20,6 +21,8 @@ namespace AppLinks.MAUI
             var mainThread = IPlatformApplication.Current.Services.GetService<IMainThread>();
             return new AppLinkProcessor(logger, appLinkRules, mainThread);
         }
+
+        private const string DefaultTargetName = "__default__";
 
         private readonly Dictionary<string, Dictionary<string, Action<Uri>>> ruleCallbacks =
             new Dictionary<string, Dictionary<string, Action<Uri>>>();
@@ -50,6 +53,24 @@ namespace AppLinks.MAUI
             }
         }
 
+        public void RegisterCallback(AppLinkRule rule, Action<Uri> action)
+        {
+            this.RegisterCallback(null, rule, action);
+        }
+
+        public void RegisterCallback(object target, AppLinkRule rule, Action<Uri> action)
+        {
+            ArgumentNullException.ThrowIfNull(rule);
+            ArgumentNullException.ThrowIfNull(action);
+
+            this.RegisterCallback(target, rule.RuleId, action);
+        }
+
+        public void RegisterCallback(string ruleId, Action<Uri> action)
+        {
+            this.RegisterCallback(null, ruleId, action);
+        }
+
         public void RegisterCallback(object target, string ruleId, Action<Uri> action)
         {
             ArgumentException.ThrowIfNullOrEmpty(ruleId);
@@ -76,27 +97,14 @@ namespace AppLinks.MAUI
             this.ProcessPendingUris();
         }
 
-        private static string GetTargetName(object target)
+        public bool RemoveCallback(string ruleId)
         {
-            return target?.GetType().Name ?? "null";
+            return this.RemoveCallback(null, ruleId);
         }
 
-        public void RegisterCallback(object target, AppLinkRule rule, Action<Uri> action)
+        public bool RemoveCallback(AppLinkRule rule)
         {
-            ArgumentNullException.ThrowIfNull(rule);
-            ArgumentNullException.ThrowIfNull(action);
-
-            this.RegisterCallback(target, rule.RuleId, action);
-        }
-
-        public bool RemoveCallback(object target, string ruleId)
-        {
-            ArgumentException.ThrowIfNullOrEmpty(ruleId);
-
-            this.logger.LogDebug($"RemoveCallback: rulesId={ruleId}");
-
-            var targetName = GetTargetName(target);
-            return this.ruleCallbacks[targetName].Remove(ruleId);
+            return this.RemoveCallback(null, rule);
         }
 
         public bool RemoveCallback(object target, AppLinkRule rule)
@@ -106,14 +114,26 @@ namespace AppLinks.MAUI
             return this.RemoveCallback(target, rule.RuleId);
         }
 
+        public bool RemoveCallback(object target, string ruleId)
+        {
+            ArgumentException.ThrowIfNullOrEmpty(ruleId);
+
+            var targetName = GetTargetName(target);
+            this.logger.LogDebug($"RemoveCallback: target={targetName}, rulesId={ruleId}");
+
+            return this.ruleCallbacks[targetName].Remove(ruleId);
+        }
+
         public void ClearCallbacks(object target)
         {
             var targetName = GetTargetName(target);
+            this.logger.LogDebug($"ClearCallbacks: target={targetName}");
             this.ruleCallbacks[targetName].Clear();
         }
 
         public void ClearCallbacks()
         {
+            this.logger.LogDebug("ClearCallbacks");
             this.ruleCallbacks.Clear();
         }
 
@@ -222,6 +242,11 @@ namespace AppLinks.MAUI
                 // it also eliminates duplicate URIs from the queue.
                 this.pendingUris = new Queue<Uri>(this.pendingUris.Except(processedUris));
             }
+        }
+
+        private static string GetTargetName(object target)
+        {
+            return target?.GetType().GetFormattedName() ?? DefaultTargetName;
         }
     }
 }
