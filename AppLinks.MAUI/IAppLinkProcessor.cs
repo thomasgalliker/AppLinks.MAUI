@@ -14,10 +14,10 @@ namespace AppLinks.MAUI
         /// This method is called by the consumer that expects
         /// app link data from a certain <paramref name="ruleId"/>.
         /// This could be a view model or just another service.
-        /// Don't forget to call <see cref="RemoveCallback(string)"/> or <see cref="RemoveCallback(AppLinkRule)"/>
+        /// Don't forget to call <see cref="RemoveCallback(object, string)"/> or <see cref="RemoveCallback(object, AppLinkRule)"/>
         /// when the consumer is no longer interested in the app link data for the given rule.
         /// </remarks>
-        void RegisterCallback(string ruleId, Action<Uri> action);
+        void RegisterCallback(object target, string ruleId, Action<Uri> action);
 
         /// <summary>
         /// Registers a callback <paramref name="action"/> for a specific rule.
@@ -26,20 +26,25 @@ namespace AppLinks.MAUI
         /// This method is called by the consumer that expects
         /// app link data from a certain <paramref name="rule"/>.
         /// This could be a view model or just another service.
-        /// Don't forget to call <see cref="RemoveCallback(string)"/> or <see cref="RemoveCallback(AppLinkRule)"/>
+        /// Don't forget to call <see cref="RemoveCallback(object, string)"/> or <see cref="RemoveCallback(object, AppLinkRule)"/>
         /// when the consumer is no longer interested in the app link data for the given rule.
         /// </remarks>
-        void RegisterCallback(AppLinkRule rule, Action<Uri> action);
+        void RegisterCallback(object target, AppLinkRule rule, Action<Uri> action);
 
         /// <summary>
         /// Removes all callbacks for a specific rule.
         /// </summary>
-        bool RemoveCallback(string ruleId);
+        bool RemoveCallback(object target, string ruleId);
 
         /// <summary>
         /// Removes all callbacks for a specific rule.
         /// </summary>
-        bool RemoveCallback(AppLinkRule rule);
+        bool RemoveCallback(object target, AppLinkRule rule);
+
+        /// <summary>
+        /// Removes all callbacks for all rules of a given <paramref name="target"/>.
+        /// </summary>
+        void ClearCallbacks(object target);
 
         /// <summary>
         /// Removes all callbacks for all rules.
