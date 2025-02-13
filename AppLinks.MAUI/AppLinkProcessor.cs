@@ -79,20 +79,23 @@ namespace AppLinks.MAUI
             var targetName = GetTargetName(target);
             this.logger.LogDebug($"RegisterCallback: target={targetName}, rulesId={ruleId}");
 
-            if (this.rules.All(r => r.RuleId != ruleId))
+            lock (this.lockObj)
             {
-                this.logger.LogWarning(
-                    $"RegisterCallback: Rule with ID \"{ruleId}\" is not registered. " +
-                    $"Call {nameof(IAppLinkRuleManager)}.{nameof(IAppLinkRuleManager.Add)} to register new app link rules.");
-            }
+                if (this.rules.All(r => r.RuleId != ruleId))
+                {
+                    this.logger.LogWarning(
+                        $"RegisterCallback: Rule with ID \"{ruleId}\" is not registered. " +
+                        $"Call {nameof(IAppLinkRuleManager)}.{nameof(IAppLinkRuleManager.Add)} to register new app link rules.");
+                }
 
-            if (!this.ruleCallbacks.TryGetValue(targetName, out var targetRuleCallbacks))
-            {
-                targetRuleCallbacks = new Dictionary<string, Action<Uri>>();
-                this.ruleCallbacks.Add(targetName, targetRuleCallbacks);
-            }
+                if (!this.ruleCallbacks.TryGetValue(targetName, out var targetRuleCallbacks))
+                {
+                    targetRuleCallbacks = new Dictionary<string, Action<Uri>>();
+                    this.ruleCallbacks.Add(targetName, targetRuleCallbacks);
+                }
 
-            targetRuleCallbacks[ruleId] = action;
+                targetRuleCallbacks[ruleId] = action;
+            }
 
             this.ProcessPendingUris();
         }
@@ -121,28 +124,54 @@ namespace AppLinks.MAUI
             var targetName = GetTargetName(target);
             this.logger.LogDebug($"RemoveCallback: target={targetName}, rulesId={ruleId}");
 
-            return this.ruleCallbacks[targetName].Remove(ruleId);
+            var removed = false;
+
+            lock (this.lockObj)
+            {
+                if (this.ruleCallbacks.TryGetValue(targetName, out var targetRuleCallbacks))
+                {
+                    removed = targetRuleCallbacks.Remove(ruleId);
+
+                    if (targetRuleCallbacks.Count == 0)
+                    {
+                        this.ruleCallbacks.Remove(targetName);
+                    }
+                }
+            }
+
+            return removed;
         }
 
         public void ClearCallbacks(object target)
         {
             var targetName = GetTargetName(target);
             this.logger.LogDebug($"ClearCallbacks: target={targetName}");
-            this.ruleCallbacks[targetName].Clear();
+
+            lock (this.lockObj)
+            {
+                this.ruleCallbacks.Remove(targetName);
+            }
         }
 
         public void ClearCallbacks()
         {
             this.logger.LogDebug("ClearCallbacks");
-            this.ruleCallbacks.Clear();
+
+            lock (this.lockObj)
+            {
+                this.ruleCallbacks.Clear();
+            }
         }
 
         public void Add(AppLinkRule rule)
         {
             ArgumentNullException.ThrowIfNull(rule);
 
-            this.Remove(rule.RuleId);
-            this.rules.Add(rule);
+            lock (this.lockObj)
+            {
+                this.Remove(rule.RuleId);
+                this.rules.Add(rule);
+            }
 
             this.ProcessPendingUris();
         }
@@ -156,10 +185,13 @@ namespace AppLinks.MAUI
 
         public void Remove(string ruleId)
         {
-            var rule = this.rules.FirstOrDefault(r => r.RuleId == ruleId);
-            if (rule != null)
+            lock (this.lockObj)
             {
-                this.rules.Remove(rule);
+                var rule = this.rules.FirstOrDefault(r => r.RuleId == ruleId);
+                if (rule != null)
+                {
+                    this.rules.Remove(rule);
+                }
             }
         }
 

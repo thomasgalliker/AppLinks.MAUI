@@ -214,6 +214,42 @@ namespace AppLinks.MAUI.Tests
         }
 
         [Fact]
+        public void ClearCallbacks_WithTarget_ShouldNoLongerCallAction()
+        {
+            // Arrange
+            var uris = new List<(string, Uri)>();
+            var processor = this.autoMocker.CreateInstance<AppLinkProcessor>(enablePrivate: true);
+            var appLinkRule = new AppLinkRule("HomePageRule", uri => uri.Host == "example.com" && uri.AbsolutePath == "/home");
+            processor.Add(appLinkRule);
+            processor.RegisterCallback(this, appLinkRule, u => uris.Add(("HomePageRule", u)));
+
+            // Act
+            processor.ClearCallbacks();
+            processor.Process(new Uri("https://example.com/home"));
+
+            // Assert
+            uris.Should().BeEmpty();
+        }
+
+        [Fact]
+        public void ClearCallbacks_WithoutTarget_ShouldNoLongerCallAction()
+        {
+            // Arrange
+            var uris = new List<(string, Uri)>();
+            var processor = this.autoMocker.CreateInstance<AppLinkProcessor>(enablePrivate: true);
+            var appLinkRule = new AppLinkRule("HomePageRule", uri => uri.Host == "example.com" && uri.AbsolutePath == "/home");
+            processor.Add(appLinkRule);
+            processor.RegisterCallback(this, appLinkRule, u => uris.Add(("HomePageRule", u)));
+
+            // Act
+            processor.ClearCallbacks(this);
+            processor.Process(new Uri("https://example.com/home"));
+
+            // Assert
+            uris.Should().BeEmpty();
+        }
+
+        [Fact]
         public void ClearCache_ShouldRemoveAllPendingUris()
         {
             // Arrange
