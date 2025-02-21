@@ -27,31 +27,34 @@ namespace AppLinks.MAUI
                 lifecycle.AddAndroid(android =>
                 {
                     // Called, when the app is not running/on the activity stack and started from scratch.
-                    // The App link is included in the activity.Intent.Data parameter in this case.
+                    // The app link is included in the activity.Intent.Data parameter in this case.
                     // Intent action is "view".
                     android.OnCreate((activity, _) =>
                     {
-                        var action = activity.Intent?.Action;
-                        var data = activity.Intent?.Data?.ToString();
-
-                        if (action == Intent.ActionView && data is not null)
+                        if (activity.Intent is Intent intent)
                         {
-                            Task.Run(() => HandleAppLink(data, defaultOptions));
+                            var action = intent.Action;
+
+                            if (action == Intent.ActionView &&
+                                intent.Data is { IsHierarchical: true } uri)
+                            {
+                                Task.Run(() => HandleAppLinkOnCreate(uri, defaultOptions));
+                            }
                         }
                     });
 
                     // Called, when the app is present on the activity stack and brought back to the front.
-                    // The App Link is included in the intent.Data parameter attribute,
-                    // NOT in the activity.Intent.Data parameter attribute in this case.
+                    // The app link is included in the intent.Data parameter attribute - NOT -
+                    // in the activity.Intent.Data parameter attribute in this case.
                     // Intent action is "main".
                     android.OnNewIntent((activity, intent) =>
                     {
                         var action = activity.Intent?.Action;
-                        var data = intent?.Data?.ToString();
 
-                        if (action == Intent.ActionMain && data is not null)
+                        if (action == Intent.ActionMain &&
+                            intent?.Data is { IsHierarchical: true } uri)
                         {
-                            Task.Run(() => HandleAppLink(data, defaultOptions));
+                            Task.Run(() => HandleAppLinkOnNewIntent(uri, defaultOptions));
                         }
                     });
                 });
@@ -126,6 +129,18 @@ namespace AppLinks.MAUI
             }
         }
 
+#endif
+
+#if ANDROID
+        private static void HandleAppLinkOnCreate(Android.Net.Uri uri, AppLinkOptions options)
+        {
+            HandleAppLink(uri.ToString(), options);
+        }
+
+        private static void HandleAppLinkOnNewIntent(Android.Net.Uri uri, AppLinkOptions options)
+        {
+            HandleAppLink(uri.ToString(), options);
+        }
 #endif
 
         private static void HandleAppLink(string url, AppLinkOptions options)

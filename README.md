@@ -57,6 +57,7 @@ Contributors welcome! If you find a bug or you want to propose a new feature, fe
 - https://developer.apple.com/documentation/xcode/supporting-associated-domains
 - https://developer.android.com/training/app-links
 - https://developers.google.com/digital-asset-links/tools/generator
+- https://chris.orr.me.uk/article/android-app-linking-how-it-works/
 - https://learn.microsoft.com/en-us/dotnet/maui/android/app-links
 - https://learn.microsoft.com/en-us/dotnet/maui/macios/universal-links
 - https://branch.io/resources/aasa-validator
