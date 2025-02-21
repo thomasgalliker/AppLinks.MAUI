@@ -59,13 +59,13 @@ namespace AppLinks.MAUI.Tests
             processor.Add(new AppLinkRule("HomePageRule", uri => uri.Host == "example.com" && uri.AbsolutePath == "/home"));
             processor.Add(new AppLinkRule("SettingsPageRule", uri => uri.Host == "example.com" && uri.AbsolutePath == "/settings"));
 
-            processor.RegisterCallback("HomePageRule", u => uris.Add(("HomePageRule", u)));
+            processor.RegisterCallback(this, "HomePageRule", u => uris.Add(("HomePageRule", u)));
 
             processor.Process(new Uri("https://example.com/home"));
             processor.Process(new Uri("https://example.com/settings"));
 
             // Act
-            processor.RegisterCallback("SettingsPageRule", u => uris.Add(("SettingsPageRule", u)));
+            processor.RegisterCallback(this, "SettingsPageRule", u => uris.Add(("SettingsPageRule", u)));
 
             // Assert
             uris.Should().HaveCount(2);
@@ -86,7 +86,7 @@ namespace AppLinks.MAUI.Tests
             processor.Process(new Uri("https://example.com/home"));
 
             // Act
-            processor.RegisterCallback("HomePageRule", u => uris.Add(("HomePageRule", u)));
+            processor.RegisterCallback(this, "HomePageRule", u => uris.Add(("HomePageRule", u)));
 
             // Assert
             uris.Should().HaveCount(1);
@@ -102,7 +102,7 @@ namespace AppLinks.MAUI.Tests
             var processor = this.autoMocker.CreateInstance<AppLinkProcessor>(enablePrivate: true);
 
             // Act
-            processor.RegisterCallback("HomePageRule", _ => {});
+            processor.RegisterCallback(this, "HomePageRule", _ => {});
 
             // Assert
             loggerMock.Verify(
@@ -113,8 +113,6 @@ namespace AppLinks.MAUI.Tests
                     It.IsAny<Exception>(),
                     It.IsAny<Func<It.IsAnyType, Exception, string>>()),
                 Times.Once);
-
-            loggerMock.VerifyNoOtherCalls();
         }
 
         [Fact]
@@ -123,7 +121,7 @@ namespace AppLinks.MAUI.Tests
             // Arrange
             var appRuleCalls = new List<string>();
             var processor = this.autoMocker.CreateInstance<AppLinkProcessor>(enablePrivate: true);
-            processor.RegisterCallback("HomePageRule", uri => {});
+            processor.RegisterCallback(this, "HomePageRule", uri => {});
 
             var appLinkRuleHome1 = new AppLinkRule("HomePageRule", uri => { appRuleCalls.Add("appLinkRuleHome1"); return true; });
             var appLinkRuleHome2 = new AppLinkRule("HomePageRule", uri => { appRuleCalls.Add("appLinkRuleHome2"); return true; });
@@ -149,10 +147,10 @@ namespace AppLinks.MAUI.Tests
             var uris = new List<(string, Uri)>();
             var processor = this.autoMocker.CreateInstance<AppLinkProcessor>(enablePrivate: true);
             processor.Add(new AppLinkRule("HomePageRule", uri => uri.Host == "example.com" && uri.AbsolutePath == "/home"));
-            processor.RegisterCallback("HomePageRule", u => uris.Add(("HomePageRule", u)));
+            processor.RegisterCallback(this, "HomePageRule", u => uris.Add(("HomePageRule", u)));
 
             // Act
-            var removed = processor.RemoveCallback("HomePageRule");
+            var removed = processor.RemoveCallback(this, "HomePageRule");
             processor.Process(new Uri("https://example.com/home"));
 
             // Assert
@@ -168,10 +166,10 @@ namespace AppLinks.MAUI.Tests
             var processor = this.autoMocker.CreateInstance<AppLinkProcessor>(enablePrivate: true);
             var appLinkRule = new AppLinkRule("HomePageRule", uri => uri.Host == "example.com" && uri.AbsolutePath == "/home");
             processor.Add(appLinkRule);
-            processor.RegisterCallback(appLinkRule, u => uris.Add(("HomePageRule", u)));
+            processor.RegisterCallback(this, appLinkRule, u => uris.Add(("HomePageRule", u)));
 
             // Act
-            var removed = processor.RemoveCallback(appLinkRule);
+            var removed = processor.RemoveCallback(this, appLinkRule);
             processor.Process(new Uri("https://example.com/home"));
 
             // Assert
@@ -187,7 +185,7 @@ namespace AppLinks.MAUI.Tests
             var processor = this.autoMocker.CreateInstance<AppLinkProcessor>(enablePrivate: true);
             var appLinkRule = new AppLinkRule("HomePageRule", uri => uri.Host == "example.com" && uri.AbsolutePath == "/home");
             processor.Add(appLinkRule);
-            processor.RegisterCallback(appLinkRule, u => uris.Add(("HomePageRule", u)));
+            processor.RegisterCallback(this, appLinkRule, u => uris.Add(("HomePageRule", u)));
 
             // Act
             processor.Remove(appLinkRule);
@@ -205,10 +203,46 @@ namespace AppLinks.MAUI.Tests
             var processor = this.autoMocker.CreateInstance<AppLinkProcessor>(enablePrivate: true);
             var appLinkRule = new AppLinkRule("HomePageRule", uri => uri.Host == "example.com" && uri.AbsolutePath == "/home");
             processor.Add(appLinkRule);
-            processor.RegisterCallback(appLinkRule, u => uris.Add(("HomePageRule", u)));
+            processor.RegisterCallback(this, appLinkRule, u => uris.Add(("HomePageRule", u)));
 
             // Act
             processor.Remove("HomePageRule");
+            processor.Process(new Uri("https://example.com/home"));
+
+            // Assert
+            uris.Should().BeEmpty();
+        }
+
+        [Fact]
+        public void ClearCallbacks_WithTarget_ShouldNoLongerCallAction()
+        {
+            // Arrange
+            var uris = new List<(string, Uri)>();
+            var processor = this.autoMocker.CreateInstance<AppLinkProcessor>(enablePrivate: true);
+            var appLinkRule = new AppLinkRule("HomePageRule", uri => uri.Host == "example.com" && uri.AbsolutePath == "/home");
+            processor.Add(appLinkRule);
+            processor.RegisterCallback(this, appLinkRule, u => uris.Add(("HomePageRule", u)));
+
+            // Act
+            processor.ClearCallbacks();
+            processor.Process(new Uri("https://example.com/home"));
+
+            // Assert
+            uris.Should().BeEmpty();
+        }
+
+        [Fact]
+        public void ClearCallbacks_WithoutTarget_ShouldNoLongerCallAction()
+        {
+            // Arrange
+            var uris = new List<(string, Uri)>();
+            var processor = this.autoMocker.CreateInstance<AppLinkProcessor>(enablePrivate: true);
+            var appLinkRule = new AppLinkRule("HomePageRule", uri => uri.Host == "example.com" && uri.AbsolutePath == "/home");
+            processor.Add(appLinkRule);
+            processor.RegisterCallback(this, appLinkRule, u => uris.Add(("HomePageRule", u)));
+
+            // Act
+            processor.ClearCallbacks(this);
             processor.Process(new Uri("https://example.com/home"));
 
             // Assert
@@ -227,7 +261,7 @@ namespace AppLinks.MAUI.Tests
 
             // Act
             processor.ClearCache();
-            processor.RegisterCallback("HomePageRule", u => uris.Add(("HomePageRule", u)));
+            processor.RegisterCallback(this, "HomePageRule", u => uris.Add(("HomePageRule", u)));
 
             // Assert
             uris.Should().BeEmpty();

@@ -80,7 +80,7 @@ namespace AppLinksDemoApp.ViewModels
 
                 // Register for app link calls backs.
                 // We use the static app link rules here.
-                // IAppLinkProcessor.Current.RegisterCallback(StaticAppLinkRules.HomeRule,
+                // IAppLinkProcessor.Current.RegisterCallback(this, StaticAppLinkRules.HomeRule,
                 //     uri => this.dialogService.DisplayAlertAsync(
                 //         StaticAppLinkRules.HomeRule.RuleId,
                 //         $"Callback for rule \"{StaticAppLinkRules.HomeRule.RuleId}\"{Environment.NewLine}{Environment.NewLine}" +
@@ -89,18 +89,22 @@ namespace AppLinksDemoApp.ViewModels
 
                 // Register for app link calls backs.
                 // We use injected app link rules here.
-                this.appLinkProcessor.RegisterCallback(this.appLinkRules.HomeRule,
-                    uri => this.dialogService.DisplayAlertAsync(
-                        this.appLinkRules.HomeRule.RuleId,
-                        $"Callback for rule \"{this.appLinkRules.HomeRule.RuleId}\"{Environment.NewLine}{Environment.NewLine}" +
-                        $"URI {uri}",
-                        "OK"));
+                this.appLinkProcessor.RegisterCallback(this, this.appLinkRules.HomeRule, async uri => await this.HandleHomeRuleAppLinkAsync(uri));
             }
             catch (Exception ex)
             {
                 this.logger.LogError(ex, "InitializeAsync failed with exception");
                 await this.dialogService.DisplayAlertAsync("Error", "Initialization failed", "OK");
             }
+        }
+
+        private async Task HandleHomeRuleAppLinkAsync(Uri uri)
+        {
+            await this.dialogService.DisplayAlertAsync(
+                this.appLinkRules.HomeRule.RuleId,
+                $"Callback for rule \"{this.appLinkRules.HomeRule.RuleId}\"{Environment.NewLine}{Environment.NewLine}" +
+                $"URI {uri}",
+                "OK");
         }
 
         public ICommand SubscribeToAppLinkReceivedEventCommand
