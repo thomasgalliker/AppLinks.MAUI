@@ -1,7 +1,8 @@
 # AppLinks.MAUI
 [![Version](https://img.shields.io/nuget/v/AppLinks.MAUI.svg)](https://www.nuget.org/packages/AppLinks.MAUI) [![Downloads](https://img.shields.io/nuget/dt/AppLinks.MAUI.svg)](https://www.nuget.org/packages/AppLinks.MAUI) [![Buy Me a Coffee](https://img.shields.io/badge/support-buy%20me%20a%20coffee-FFDD00)](https://buymeacoffee.com/thomasgalliker)
 
-This library offers camera preview and barcode scanning functionality for .NET MAUI apps using native platform APIs with **Google ML Kit** and **Apple VisionKit**.
+This library provides a streamlined solution for managing Universal Links (iOS) and App Links (Android), enabling seamless deep linking experiences across platforms.
+It abstracts the complexity of platform-specific behaviors, allowing developers to define and handle in-app routing logic from a platform-independent interface.
 
 ### Download and Install AppLinks.MAUI
 This library is available on NuGet: https://www.nuget.org/packages/AppLinks.MAUI
