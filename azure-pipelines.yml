@@ -96,12 +96,16 @@ steps:
   displayName: 'NuGet restore'
   inputs:
     command: restore
-    projects: '$(solution)'
+    projects: |
+      AppLinks.MAUI/**/*.csproj
+      Tests/**/*.Tests.csproj
 
 - task: DotNetCoreCLI@2
   displayName: 'Build solution'
   inputs:
-    projects: '$(solution)'
+    projects: |
+      AppLinks.MAUI/**/*.csproj
+      Tests/**/*.Tests.csproj
     arguments: '--no-restore --configuration $(buildConfiguration)'
     
 - task: DotNetCoreCLI@2
