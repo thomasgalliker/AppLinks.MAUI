@@ -5,7 +5,7 @@ namespace AppLinks.MAUI
         /// <summary>
         /// Gets the singleton instance of <see cref="IAppLinkProcessor"/>.
         /// </summary>
-        public static IAppLinkRuleManager Current { get; set; } = (IAppLinkRuleManager)AppLinkProcessor.Current;
+        public static IAppLinkRuleManager Current => (IAppLinkRuleManager)AppLinkProcessor.Current;
 
         /// <summary>
         /// Adds a new URI processing rule.

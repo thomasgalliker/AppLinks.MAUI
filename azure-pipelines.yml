@@ -22,7 +22,6 @@ trigger:
     - Docs/*
 
 variables:
-  solution: 'AppLinks.MAUI.sln'
   buildPlatform: 'Any CPU'
   buildConfiguration: 'Release'
   majorVersion: 1
@@ -65,7 +64,7 @@ steps:
     PackageVersion: '$(Build.BuildNumber)'
     LogLevel: 'verbose'
     FailOnWarning: false
-    DisableTelemetry: false'
+    DisableTelemetry: true
     
 - task: UseDotNet@2
   displayName: 'Use .NET 8.x'
@@ -96,12 +95,16 @@ steps:
   displayName: 'NuGet restore'
   inputs:
     command: restore
-    projects: '$(solution)'
+    projects: |
+      AppLinks.MAUI/**/*.csproj
+      Tests/**/*.Tests.csproj
 
 - task: DotNetCoreCLI@2
   displayName: 'Build solution'
   inputs:
-    projects: '$(solution)'
+    projects: |
+      AppLinks.MAUI/**/*.csproj
+      Tests/**/*.Tests.csproj
     arguments: '--no-restore --configuration $(buildConfiguration)'
     
 - task: DotNetCoreCLI@2

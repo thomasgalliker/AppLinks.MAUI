@@ -1,6 +1,6 @@
 namespace AppLinks.MAUI.Services
 {
-    public interface IMainThread
+    internal interface IMainThread
     {
         /// <inheritdoc cref="MainThread.IsMainThread"/>
         public bool IsMainThread { get; }

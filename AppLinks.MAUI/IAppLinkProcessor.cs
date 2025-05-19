@@ -5,7 +5,7 @@ namespace AppLinks.MAUI
         /// <summary>
         /// Gets the singleton instance of <see cref="IAppLinkProcessor"/>.
         /// </summary>
-        public static IAppLinkProcessor Current { get; set; } = AppLinkProcessor.Current;
+        public static IAppLinkProcessor Current => AppLinkProcessor.Current;
 
         /// <summary>
         /// Registers a callback <paramref name="action"/> for a specific rule.

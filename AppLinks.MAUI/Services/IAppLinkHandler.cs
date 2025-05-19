@@ -5,7 +5,7 @@ namespace AppLinks.MAUI.Services
         /// <summary>
         /// Gets the singleton instance of <see cref="IAppLinkHandler"/>.
         /// </summary>
-        public static IAppLinkHandler Current { get; set; } = AppLinkHandler.Current;
+        public static IAppLinkHandler Current => AppLinkHandler.Current;
 
         internal void EnqueueAppLink(Uri uri);
 
