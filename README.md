@@ -10,7 +10,7 @@ Use the following command to install AppLinks.MAUI using NuGet package manager c
 
     PM> Install-Package AppLinks.MAUI
 
-You can use this library in any .NET MAUI project compatible to .NET 8 and higher.
+You can use this library in any .NET MAUI project compatible to .NET 9 and higher.
 
 #### App Link Setup for Android Apps
 1. Register app link host in `MainActivity` by creating one or more `IntentFilter` with `DataScheme` and `DataHost`.
