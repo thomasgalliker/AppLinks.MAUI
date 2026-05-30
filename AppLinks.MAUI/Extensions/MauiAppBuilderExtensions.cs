@@ -1,8 +1,4 @@
-﻿using AppLinks.MAUI.Services;
-using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Maui.LifecycleEvents;
-
-#if IOS
+﻿#if IOS
 using Foundation;
 #endif
 

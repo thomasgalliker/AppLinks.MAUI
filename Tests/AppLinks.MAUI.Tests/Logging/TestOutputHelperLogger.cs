@@ -1,8 +1,4 @@
-﻿using System.Diagnostics;
-using Microsoft.Extensions.Logging;
-using Xunit.Abstractions;
-
-namespace AppLinks.MAUI.Tests.Logging
+﻿namespace AppLinks.MAUI.Tests.Logging
 {
     internal class TestOutputHelperLogger : ILogger
     {

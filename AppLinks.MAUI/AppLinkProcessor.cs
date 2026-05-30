@@ -1,7 +1,3 @@
-using AppLinks.MAUI.Extensions;
-using AppLinks.MAUI.Services;
-using Microsoft.Extensions.Logging;
-
 namespace AppLinks.MAUI
 {
     internal class AppLinkProcessor : IAppLinkProcessor, IAppLinkRuleManager

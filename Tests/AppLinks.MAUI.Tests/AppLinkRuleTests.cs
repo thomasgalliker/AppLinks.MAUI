@@ -1,6 +1,3 @@
-using FluentAssertions;
-using Xunit;
-
 namespace AppLinks.MAUI.Tests
 {
     public class AppLinkRuleTests

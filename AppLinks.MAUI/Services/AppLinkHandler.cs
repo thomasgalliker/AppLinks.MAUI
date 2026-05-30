@@ -1,7 +1,3 @@
-using System.Runtime.CompilerServices;
-using AppLinks.MAUI.Extensions;
-using Microsoft.Extensions.Logging;
-
 namespace AppLinks.MAUI.Services
 {
     internal class AppLinkHandler : IAppLinkHandler

@@ -1,6 +1,4 @@
-﻿using System.ComponentModel;
-
-namespace AppLinks.MAUI
+﻿namespace AppLinks.MAUI
 {
     [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
     [EditorBrowsable(EditorBrowsableState.Never)]

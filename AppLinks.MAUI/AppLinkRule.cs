@@ -1,5 +1,3 @@
-using System.Diagnostics;
-
 namespace AppLinks.MAUI
 {
     [DebuggerDisplay("{RuleId}")]
